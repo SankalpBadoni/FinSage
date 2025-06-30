@@ -4,6 +4,8 @@ import Home from './routes/Home';
 import Dashboard from './routes/Dashboard';
 import Investments from './routes/Investments';
 import BudgetCalculator from './routes/BudgetCalculator';
+import Login from './routes/Login';
+import SignUp from './routes/SignUp';
 
 import './App.css';
 
@@ -18,6 +20,8 @@ function App() {
             <Route path="/budget" element={<BudgetCalculator />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/investments" element={<Investments />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
           </Routes>
         </main>
       </div>

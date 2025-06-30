@@ -6,7 +6,6 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { name: 'Home', path: '/' },
     { name: 'Budget Calculator', path: '/budget' },
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Investments', path: '/investments' },
@@ -14,11 +13,9 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Fixed navbar with higher z-index and white background */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
             <Link to="/" className="flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 FinSmart
@@ -26,7 +23,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex items-center space-x-8">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
@@ -36,6 +33,15 @@ export default function Navbar() {
                   {item.name}
                 </Link>
               ))}
+              <div className="flex items-center space-x-4">
+                
+                <Link
+                  to="/login"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out"
+                >
+                  Get Started
+                </Link>
+              </div>
             </nav>
 
             {/* Mobile menu button */}
@@ -69,11 +75,26 @@ export default function Navbar() {
                   {item.name}
                 </Link>
               ))}
+              <Link
+                to="/login"
+                className="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className="block px-3 py-2 mt-2"
+                onClick={() => setIsOpen(false)}
+              >
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-base font-medium inline-block hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out">
+                  Get Started
+                </span>
+              </Link>
             </div>
           </div>
         )}
       </div>
-      {/* Spacer div to prevent content from hiding behind fixed navbar */}
       <div className="h-16"></div>
     </>
   );
