@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User.model');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.model.js';
 
-exports.protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
 
   if (
@@ -27,15 +27,15 @@ exports.protect = async (req, res, next) => {
 };
 
 // Generate JWT Token
-exports.generateToken = (id) => {
+const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
 // Set token in cookie
-exports.sendTokenResponse = (user, statusCode, res) => {
-  const token = this.generateToken(user._id);
+const sendTokenResponse = (user, statusCode, res) => {
+  const token = generateToken(user._id);
 
   const options = {
     expires: new Date(
@@ -56,3 +56,5 @@ exports.sendTokenResponse = (user, statusCode, res) => {
       token,
     });
 };
+
+export { protect, generateToken, sendTokenResponse };

@@ -1,7 +1,7 @@
-const User = require('../models/User.model');
-const { generateToken, sendTokenResponse } = require('../middleware/auth.middleware');
+import User from '../models/User.model.js';
+import { generateToken, sendTokenResponse } from '../middleware/auth.middleware.js';
 
-exports.register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -27,7 +27,7 @@ exports.register = async (req, res) => {
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -54,8 +54,7 @@ exports.login = async (req, res) => {
   }
 };
 
-
-exports.getMe = async (req, res) => {
+const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     res.status(200).json({
@@ -67,8 +66,7 @@ exports.getMe = async (req, res) => {
   }
 };
 
-
-exports.logout = async (req, res) => {
+const logout = async (req, res) => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
@@ -79,3 +77,5 @@ exports.logout = async (req, res) => {
     data: {},
   });
 };
+
+export { register, login, getMe, logout };
