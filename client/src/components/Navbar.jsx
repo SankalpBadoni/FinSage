@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const navItems = [
     { name: 'Budget Calculator', path: '/budget' },
@@ -34,13 +37,37 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="flex items-center space-x-4">
-                
-                <Link
-                  to="/login"
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out"
-                >
-                  Get Started
-                </Link>
+                {user ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsProfileOpen(!isProfileOpen)}
+                      className="flex items-center space-x-2 text-gray-600 hover:text-indigo-600"
+                    >
+                      <UserCircleIcon className="w-8 h-8" />
+                      <span>{user.name}</span>
+                    </button>
+                    
+                    {isProfileOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-50 border border-gray-100">
+                        <div className="px-4 py-2 text-xs text-gray-500">{user.email}</div>
+                        <div className="border-t border-gray-100"></div>
+                        <button
+                          onClick={logout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out"
+                  >
+                    Get Started
+                  </Link>
+                )}
               </div>
             </nav>
 
@@ -75,22 +102,42 @@ export default function Navbar() {
                   {item.name}
                 </Link>
               ))}
-              <Link
-                to="/login"
-                className="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="block px-3 py-2 mt-2"
-                onClick={() => setIsOpen(false)}
-              >
-                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-base font-medium inline-block hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out">
-                  Get Started
-                </span>
-              </Link>
+              {user ? (
+                <>
+                  <div className="px-3 py-2 text-sm text-gray-500">
+                    Signed in as {user.name}
+                  </div>
+                  <div className="border-t border-gray-200"></div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsOpen(false);
+                    }}
+                    className="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="block px-3 py-2 mt-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-base font-medium inline-block hover:shadow-lg hover:scale-105 transition-all duration-200 ease-out">
+                      Get Started
+                    </span>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
