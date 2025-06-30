@@ -20,10 +20,12 @@ export function AuthProvider({ children }) {
       });
       if (response.ok) {
         const data = await response.json();
-        setUser(data.data);
+        if (data.success && data.data) {
+          setUser(data.data);
+        }
       }
     } catch (error) {
-      console.error('Error checking user:', error);
+      console.error('Error checking auth status:', error);
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export function AuthProvider({ children }) {
   };
 
   // Login user
-  const login = async (credentials) => {
+  const login = async (formData) => {
     try {
       const response = await fetch('http://localhost:4000/api/auth/login', {
         method: 'POST',
@@ -64,23 +66,23 @@ export function AuthProvider({ children }) {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      if (response.ok && data.success) {
+        // Wait for user data to be fetched
+        await checkUser();
+        navigate('/dashboard');
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || 'Login failed' };
       }
-
-      setUser(data.data);
-      navigate('/dashboard');
-      return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: 'An error occurred during login' };
     }
   };
-
   // Logout user
   const logout = async () => {
     try {
@@ -101,6 +103,4 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);

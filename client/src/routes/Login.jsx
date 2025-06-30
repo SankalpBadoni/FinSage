@@ -18,13 +18,17 @@ export default function Login() {
     setError('');
     setIsLoading(true);
 
-    const result = await login(formData);
-    
-    if (!result.success) {
-      setError(result.error);
+    try {
+      const result = await login(formData);
+      if (!result.success) {
+        setError(result.error);
+      }
+      // Don't need to handle success case as the AuthContext will handle navigation
+    } catch (err) {
+      setError('An error occurred during login');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
