@@ -1,26 +1,34 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { HomeIcon, TruckIcon, ShoppingBagIcon, FilmIcon } from '@heroicons/react/24/outline';
-
-const sampleData = [
-  { month: 'Jan', spending: 4000 },
-  { month: 'Feb', spending: 3000 },
-  { month: 'Mar', spending: 2000 },
-  { month: 'Apr', spending: 2780 },
-  { month: 'May', spending: 1890 },
-  { month: 'Jun', spending: 2390 },
-];
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { 
+  HomeIcon, 
+  TruckIcon, 
+  ShoppingBagIcon, 
+  FilmIcon,
+  HeartIcon,
+  AcademicCapIcon,
+  CreditCardIcon,
+  BanknotesIcon
+} from '@heroicons/react/24/outline';
+import { useBudget } from '../context/BudgetContext';
 
 const categories = [
-  { name: 'Housing', icon: <HomeIcon className="w-6 h-6" />, color: 'bg-blue-500' },
-  { name: 'Transportation', icon: <TruckIcon className="w-6 h-6" />, color: 'bg-green-500' },
-  { name: 'Food', icon: <ShoppingBagIcon className="w-6 h-6" />, color: 'bg-yellow-500' },
-  { name: 'Entertainment', icon: <FilmIcon className="w-6 h-6" />, color: 'bg-purple-500' },
+  { name: 'Housing', icon: <HomeIcon className="w-6 h-6" />, color: 'bg-blue-500', dataKey: 'housing' },
+  { name: 'Transportation', icon: <TruckIcon className="w-6 h-6" />, color: 'bg-green-500', dataKey: 'transportation' },
+  { name: 'Food & Groceries', icon: <ShoppingBagIcon className="w-6 h-6" />, color: 'bg-yellow-500', dataKey: 'food' },
+  { name: 'Healthcare', icon: <HeartIcon className="w-6 h-6" />, color: 'bg-red-500', dataKey: 'healthcare' },
+  { name: 'Entertainment', icon: <FilmIcon className="w-6 h-6" />, color: 'bg-purple-500', dataKey: 'entertainment' },
+  { name: 'Education', icon: <AcademicCapIcon className="w-6 h-6" />, color: 'bg-indigo-500', dataKey: 'education' },
+  { name: 'Debt Payments', icon: <CreditCardIcon className="w-6 h-6" />, color: 'bg-rose-500', dataKey: 'debt' },
 ];
 
 export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const { getChartData, getCurrentMonth } = useBudget();
+  
+  const chartData = useMemo(() => getChartData(), [getChartData]);
+  const currentMonth = useMemo(() => getCurrentMonth(), [getCurrentMonth]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -46,14 +54,21 @@ export default function Dashboard() {
                 onClick={() => setSelectedCategory(category.name)}
               >
                 <div className="flex items-center space-x-4">
-                  <div className={category.color + " p-3 rounded-lg"}>
+                  <div className={category.color + " p-3 rounded-lg text-white"}>
                     {category.icon}
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">{category.name}</p>
-                    <p className="text-2xl font-bold text-gray-900">$2,500</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${(currentMonth[category.name] || 0).toFixed(2)}
+                    </p>
                   </div>
                 </div>
+                {currentMonth['Monthly Income'] && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    {((currentMonth[category.name] || 0) / currentMonth['Monthly Income'] * 100).toFixed(1)}% of income
+                  </p>
+                )}
               </motion.div>
             ))}
           </div>
@@ -65,26 +80,42 @@ export default function Dashboard() {
             className="bg-white rounded-2xl shadow-lg p-6"
           >
             <h2 className="text-xl font-semibold mb-4">Spending Trends</h2>
-            <div className="h-80">
+            <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={sampleData}>
+                <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient id="colorSpending" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366F1" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#6366F1" stopOpacity={0}/>
-                    </linearGradient>
+                    {categories.map((cat, index) => (
+                      <linearGradient key={cat.dataKey} id={`color${cat.dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={cat.color.replace('bg-', '#').replace('500', '400')} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={cat.color.replace('bg-', '#').replace('500', '400')} stopOpacity={0}/>
+                      </linearGradient>
+                    ))}
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="spending"
-                    stroke="#6366F1"
-                    fillOpacity={1}
-                    fill="url(#colorSpending)"
+                  <Tooltip 
+                    formatter={(value) => `$${value.toFixed(2)}`}
+                    labelStyle={{ color: '#111827' }}
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem'
+                    }}
                   />
+                  <Legend />
+                  {categories.map((cat) => (
+                    <Area
+                      key={cat.dataKey}
+                      type="monotone"
+                      dataKey={cat.dataKey}
+                      name={cat.name}
+                      stroke={cat.color.replace('bg-', '#').replace('500', '400')}
+                      fill={`url(#color${cat.dataKey})`}
+                      fillOpacity={1}
+                      stackId="1"
+                    />
+                  ))}
                 </AreaChart>
               </ResponsiveContainer>
             </div>

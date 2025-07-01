@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useBudget } from '../context/BudgetContext';
+import { useState, useRef, useEffect } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -100,6 +102,7 @@ export default function BudgetCalculator() {
   const [focusedInput, setFocusedInput] = useState(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const navigate = useNavigate();
+  const { addMonthlyData } = useBudget();
 
   // Calculate totals by category
   const calculations = {
@@ -168,6 +171,7 @@ export default function BudgetCalculator() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowAnalysis(true);
+    addMonthlyData(expenses);
   };
 
   const containerVariants = {
@@ -186,29 +190,124 @@ export default function BudgetCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-1">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-white pt-1">
+      {/* Animated gradient overlay */}
+      <motion.div 
+        className="fixed inset-0 opacity-30 pointer-events-none"
+        style={{
+          background: "linear-gradient(45deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1))",
+          backgroundSize: "400% 400%"
+        }}
+        animate={{
+          backgroundPosition: ["0% 0%", "100% 100%"],
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          repeatType: "reverse",
+          ease: "linear"
+        }}
+      />
+
+      {/* Floating particles */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className={`absolute rounded-full ${
+              i % 3 === 0 ? 'w-3 h-3 bg-indigo-400' : 
+              i % 3 === 1 ? 'w-2 h-2 bg-purple-400' : 
+              'w-1 h-1 bg-pink-400'
+            } opacity-30`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, (Math.random() > 0.5 ? -1 : 1) * (100 + Math.random() * 150), 0],
+              x: [0, (Math.random() - 0.5) * 50, 0],
+              scale: [0, 1, 0],
+            }}
+            transition={{
+              duration: 8 + Math.random() * 7,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden"
+          className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden"
         >
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-b from-indigo-100 to-purple-100 rounded-full -mr-32 -mt-32 opacity-50" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-t from-indigo-100 to-purple-100 rounded-full -ml-32 -mb-32 opacity-50" />
+          {/* Animated decorative elements */}
+          <motion.div 
+            className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-b from-indigo-100 to-purple-100 rounded-full -mr-48 -mt-48 opacity-50"
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 0],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+          />
+          <motion.div 
+            className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-t from-purple-100 to-pink-100 rounded-full -ml-48 -mb-48 opacity-50"
+            animate={{
+              scale: [1.2, 1, 1.2],
+              rotate: [180, 0, 180],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+          />
 
           <div className="relative">
-            <div className="flex items-center space-x-4 mb-6">
-              <SparklesIcon className="w-8 h-8 text-indigo-600" />
+            <motion.div 
+              className="flex items-center space-x-4 mb-6"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <motion.div
+                animate={{
+                  rotate: [0, 360],
+                }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              >
+                <SparklesIcon className="w-8 h-8 text-indigo-600" />
+              </motion.div>
               <div>
-                <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Budget Calculator
-                </h2>
-                <p className="text-gray-600 text-lg mt-2">
-                  Enter your monthly expenses to get personalized savings recommendations
-                </p>
+                <motion.h2 
+                  className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Smart Budget Calculator
+                </motion.h2>
+                <motion.p 
+                  className="text-gray-600 text-lg mt-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  Plan your financial future with AI-powered insights
+                </motion.p>
               </div>
-            </div>
+            </motion.div>
 
             <form onSubmit={handleSubmit}>
               <motion.div
@@ -221,15 +320,24 @@ export default function BudgetCalculator() {
                   <motion.div
                     key={category.name}
                     variants={itemVariants}
+                    whileHover={{ scale: 1.02 }}
                     className="relative"
                   >
-                    <div className="relative">
-                      <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-                        <div className={"p-1.5 rounded-lg bg-gradient-to-r " + category.color}>
+                    <div className="relative group">
+                      <motion.label 
+                        className="text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2"
+                        whileHover={{ x: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <motion.div 
+                          className={`p-1.5 rounded-lg bg-gradient-to-r ${category.color}`}
+                          whileHover={{ scale: 1.1, rotate: 10 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
                           {category.icon}
-                        </div>
+                        </motion.div>
                         <span>{category.name}</span>
-                      </label>
+                      </motion.label>
                       <div className={`relative transition-all duration-300 ${
                         focusedInput === category.name ? 'scale-105' : 'scale-100'
                       }`}>
@@ -238,7 +346,10 @@ export default function BudgetCalculator() {
                         </div>
                         <input
                           type="number"
-                          className="block w-full pl-10 pr-12 py-3 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                          className="block w-full pl-10 pr-12 py-3 text-lg border-2 border-gray-200 rounded-xl 
+                            focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all
+                            group-hover:border-indigo-300 group-hover:shadow-lg backdrop-blur-sm
+                            bg-white/70"
                           placeholder={category.placeholder}
                           onFocus={() => setFocusedInput(category.name)}
                           onBlur={() => setFocusedInput(null)}
@@ -258,10 +369,27 @@ export default function BudgetCalculator() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full mt-8 py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-8 py-4 px-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 
+                  text-white text-lg font-semibold rounded-xl hover:opacity-90 transition-all 
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
+                  shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed
+                  relative overflow-hidden group"
                 disabled={!expenses['Monthly Income']}
               >
-                {expenses['Monthly Income'] ? 'Analyze Budget' : 'Enter Monthly Income'}
+                <motion.span 
+                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                  animate={{
+                    x: [-500, 500],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+                <span className="relative">
+                  {expenses['Monthly Income'] ? 'Analyze Budget' : 'Enter Monthly Income'}
+                </span>
               </motion.button>
             </form>
 
@@ -269,42 +397,102 @@ export default function BudgetCalculator() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-12"
+                className="mt-12 space-y-12"
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-2xl">
-                    <h3 className="text-emerald-800 font-semibold mb-2">Monthly Savings</h3>
-                    <p className="text-3xl font-bold text-emerald-600">
+                <motion.div 
+                  className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <motion.div
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-2xl shadow-lg relative overflow-hidden group"
+                  >
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-transparent"
+                      initial={{ x: '-100%' }}
+                      animate={{ x: '100%' }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                    <h3 className="text-emerald-800 font-semibold mb-2 relative">Monthly Savings</h3>
+                    <p className="text-3xl font-bold text-emerald-600 relative group-hover:scale-110 transition-transform">
                       ${monthlySavings.toFixed(2)}
                     </p>
-                    <p className="text-emerald-700 mt-1">
+                    <p className="text-emerald-700 mt-1 relative">
                       {((monthlySavings / calculations.income) * 100).toFixed(1)}% of income
                     </p>
-                  </div>
+                  </motion.div>
                   
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl">
-                    <h3 className="text-blue-800 font-semibold mb-2">Yearly Savings Potential</h3>
-                    <p className="text-3xl font-bold text-blue-600">
+                  <motion.div
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl shadow-lg relative overflow-hidden group"
+                  >
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-transparent"
+                      initial={{ x: '-100%' }}
+                      animate={{ x: '100%' }}
+                      transition={{
+                        duration: 3,
+                        delay: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                    <h3 className="text-blue-800 font-semibold mb-2 relative">Yearly Savings Potential</h3>
+                    <p className="text-3xl font-bold text-blue-600 relative group-hover:scale-110 transition-transform">
                       ${yearlySavings.toFixed(2)}
                     </p>
-                    <p className="text-blue-700 mt-1">If maintained for 12 months</p>
-                  </div>
+                    <p className="text-blue-700 mt-1 relative">If maintained for 12 months</p>
+                  </motion.div>
 
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl">
-                    <h3 className="text-purple-800 font-semibold mb-2">Total Expenses</h3>
-                    <p className="text-3xl font-bold text-purple-600">
+                  <motion.div
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl shadow-lg relative overflow-hidden group"
+                  >
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-transparent"
+                      initial={{ x: '-100%' }}
+                      animate={{ x: '100%' }}
+                      transition={{
+                        duration: 3,
+                        delay: 2,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                    <h3 className="text-purple-800 font-semibold mb-2 relative">Total Expenses</h3>
+                    <p className="text-3xl font-bold text-purple-600 relative group-hover:scale-110 transition-transform">
                       ${totalExpenses.toFixed(2)}
                     </p>
-                    <p className="text-purple-700 mt-1">
+                    <p className="text-purple-700 mt-1 relative">
                       {((totalExpenses / calculations.income) * 100).toFixed(1)}% of income
                     </p>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                  <div className="bg-white p-6 rounded-2xl border border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    whileHover={{ scale: 1.08 }}
+                    className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200 shadow-lg"
+                  >
                     <h3 className="text-gray-800 font-semibold mb-4">Expense Breakdown</h3>
-                    <div className="h-[300px]">
+                    <motion.div 
+                      className="h-[300px]"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 }}
+                    >
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
@@ -324,12 +512,23 @@ export default function BudgetCalculator() {
                           <Legend />
                         </PieChart>
                       </ResponsiveContainer>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
 
-                  <div className="bg-white p-6 rounded-2xl border border-gray-200">
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    whileHover={{ scale: 1.08 }}
+                    className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200 shadow-lg"
+                  >
                     <h3 className="text-gray-800 font-semibold mb-4">Income vs Expenses</h3>
-                    <div className="h-[300px]">
+                    <motion.div 
+                      className="h-[300px]"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 }}
+                    >
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={barChartData}>
                           <CartesianGrid strokeDasharray="3 3" />
@@ -343,35 +542,74 @@ export default function BudgetCalculator() {
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
                 </div>
 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100"
+                  transition={{ delay: 0.8 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-8 rounded-2xl border border-indigo-100 shadow-lg"
                 >
-                  <h3 className="text-lg font-semibold text-indigo-800 flex items-center mb-4">
-                    <SparklesIcon className="w-5 h-5 mr-2" />
+                  <motion.h3 
+                    className="text-lg font-semibold text-indigo-800 flex items-center mb-4"
+                    initial={{ x: -20 }}
+                    animate={{ x: 0 }}
+                    transition={{ delay: 1 }}
+                  >
+                    <motion.div
+                      animate={{
+                        rotate: [0, 360],
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                    >
+                      <SparklesIcon className="w-5 h-5 mr-2" />
+                    </motion.div>
                     AI Financial Insights
-                  </h3>
-                  <ul className="space-y-3">
+                  </motion.h3>
+                  <motion.ul 
+                    className="space-y-3"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
                     {getInsights().map((insight, index) => (
-                      <li key={index} className="flex items-start space-x-2 text-indigo-700">
+                      <motion.li 
+                        key={index}
+                        variants={itemVariants}
+                        className="flex items-start space-x-2 text-indigo-700"
+                      >
                         <span className="w-2 h-2 bg-indigo-400 rounded-full mt-2 flex-shrink-0" />
                         <span>{insight}</span>
-                      </li>
+                      </motion.li>
                     ))}
-                  </ul>
+                  </motion.ul>
                   
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => navigate('/dashboard')}
-                    className="w-full mt-6 py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg shadow-indigo-200"
+                    className="w-full mt-6 py-3 px-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 
+                      text-white font-semibold rounded-xl hover:opacity-90 transition-all relative overflow-hidden group"
                   >
-                    View Detailed Dashboard
+                    <motion.span 
+                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                      animate={{
+                        x: [-500, 500],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                    <span className="relative">View Detailed Dashboard</span>
                   </motion.button>
                 </motion.div>
               </motion.div>
