@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts';
 import { 
   HomeIcon, 
   TruckIcon, 
@@ -9,18 +9,20 @@ import {
   HeartIcon,
   AcademicCapIcon,
   CreditCardIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
 import { useBudget } from '../context/BudgetContext';
 
 const categories = [
-  { name: 'Housing', icon: <HomeIcon className="w-6 h-6" />, color: 'bg-blue-500', dataKey: 'housing' },
-  { name: 'Transportation', icon: <TruckIcon className="w-6 h-6" />, color: 'bg-green-500', dataKey: 'transportation' },
-  { name: 'Food & Groceries', icon: <ShoppingBagIcon className="w-6 h-6" />, color: 'bg-yellow-500', dataKey: 'food' },
-  { name: 'Healthcare', icon: <HeartIcon className="w-6 h-6" />, color: 'bg-red-500', dataKey: 'healthcare' },
-  { name: 'Entertainment', icon: <FilmIcon className="w-6 h-6" />, color: 'bg-purple-500', dataKey: 'entertainment' },
-  { name: 'Education', icon: <AcademicCapIcon className="w-6 h-6" />, color: 'bg-indigo-500', dataKey: 'education' },
-  { name: 'Debt Payments', icon: <CreditCardIcon className="w-6 h-6" />, color: 'bg-rose-500', dataKey: 'debt' },
+  { name: 'Monthly Income', icon: <BanknotesIcon className="w-6 h-6" />, color: 'bg-emerald-500', dataKey: 'Monthly Income' },
+  { name: 'Housing', icon: <HomeIcon className="w-6 h-6" />, color: 'bg-blue-500', dataKey: 'Housing' },
+  { name: 'Transportation', icon: <TruckIcon className="w-6 h-6" />, color: 'bg-purple-500', dataKey: 'Transportation' },
+  { name: 'Food & Groceries', icon: <ShoppingBagIcon className="w-6 h-6" />, color: 'bg-green-500', dataKey: 'Food & Groceries' },
+  { name: 'Healthcare', icon: <HeartIcon className="w-6 h-6" />, color: 'bg-red-500', dataKey: 'Healthcare' },
+  { name: 'Entertainment', icon: <FilmIcon className="w-6 h-6" />, color: 'bg-pink-500', dataKey: 'Entertainment' },
+  { name: 'Education', icon: <AcademicCapIcon className="w-6 h-6" />, color: 'bg-indigo-500', dataKey: 'Education' },
+  { name: 'Debt Payments', icon: <CreditCardIcon className="w-6 h-6" />, color: 'bg-rose-500', dataKey: 'Debt Payments' },
 ];
 
 export default function Dashboard() {
@@ -30,18 +32,44 @@ export default function Dashboard() {
   const chartData = useMemo(() => getChartData(), [getChartData]);
   const currentMonth = useMemo(() => getCurrentMonth(), [getCurrentMonth]);
 
+  // Calculate total expenses and savings
+  const totalExpenses = useMemo(() => {
+    if (!currentMonth) return 0;
+    return categories
+      .filter(cat => cat.name !== 'Monthly Income')
+      .reduce((sum, cat) => sum + (currentMonth[cat.dataKey] || 0), 0);
+  }, [currentMonth]);
+
+  const savings = useMemo(() => {
+    if (!currentMonth || !currentMonth['Monthly Income']) return 0;
+    return currentMonth['Monthly Income'] - totalExpenses;
+  }, [currentMonth, totalExpenses]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 gap-8">
           {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-lg p-6"
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-indigo-100"
           >
-            <h1 className="text-3xl font-bold text-gray-900">Financial Dashboard</h1>
-            <p className="mt-2 text-gray-600">Track your spending, save more, and invest wisely</p>
+            <div className="flex items-center space-x-4">
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 p-3 rounded-xl"
+              >
+                <ArrowTrendingUpIcon className="w-8 h-8 text-white" />
+              </motion.div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Financial Dashboard
+                </h1>
+                <p className="mt-2 text-gray-600 text-lg">Track your spending, save more, and invest wisely</p>
+              </div>
+            </div>
           </motion.div>
 
           {/* Stats Overview */}
@@ -50,107 +78,208 @@ export default function Dashboard() {
               <motion.div
                 key={category.name}
                 whileHover={{ scale: 1.02 }}
-                className={category.color + " bg-opacity-10 p-6 rounded-xl shadow-sm cursor-pointer transition-all"}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all"
                 onClick={() => setSelectedCategory(category.name)}
               >
-                <div className="flex items-center space-x-4">
-                  <div className={category.color + " p-3 rounded-lg text-white"}>
-                    {category.icon}
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className={`${category.color} p-3 rounded-lg text-white`}>
+                      {category.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">{category.name}</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        ${(currentMonth[category.dataKey] || 0).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">{category.name}</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      ${(currentMonth[category.name] || 0).toFixed(2)}
-                    </p>
-                  </div>
+                  
+                  {currentMonth['Monthly Income'] && category.name !== 'Monthly Income' && (
+                    <div className="mt-auto">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm text-gray-600">
+                            of income
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {((currentMonth[category.dataKey] || 0) / currentMonth['Monthly Income'] * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="overflow-hidden h-1.5 text-xs flex rounded-full bg-gray-200">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ 
+                              width: `${((currentMonth[category.dataKey] || 0) / currentMonth['Monthly Income'] * 100)}%` 
+                            }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className={`${category.color} shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center rounded-full`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {category.name === 'Monthly Income' && (
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Savings Potential</span>
+                      <span className="text-lg font-semibold text-emerald-600">
+                        ${savings.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                {currentMonth['Monthly Income'] && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    {((currentMonth[category.name] || 0) / currentMonth['Monthly Income'] * 100).toFixed(1)}% of income
-                  </p>
-                )}
               </motion.div>
             ))}
           </div>
 
-          {/* Spending Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-lg p-6"
-          >
-            <h2 className="text-xl font-semibold mb-4">Spending Trends</h2>
-            <div className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    {categories.map((cat, index) => (
-                      <linearGradient key={cat.dataKey} id={`color${cat.dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={cat.color.replace('bg-', '#').replace('500', '400')} stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor={cat.color.replace('bg-', '#').replace('500', '400')} stopOpacity={0}/>
-                      </linearGradient>
+          {/* Spending Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Area Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-indigo-100 hover:border-indigo-300 transition-all"
+            >
+              <h2 className="text-xl font-semibold mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Monthly Spending Trends</h2>
+              <div className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      {categories.filter(cat => cat.name !== 'Monthly Income').map((cat, index) => (
+                        <linearGradient key={cat.dataKey} id={`color${cat.dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={cat.color.replace('bg-', '#').replace('500', '400')} stopOpacity={0.9}/>
+                          <stop offset="95%" stopColor={cat.color.replace('bg-', '#').replace('500', '100')} stopOpacity={0.2}/>
+                          <animate attributeName="stopOpacity" values="0.2;0.3;0.2" dur="3s" repeatCount="indefinite" />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                    <XAxis 
+                      dataKey="month" 
+                      tick={{ fill: '#4B5563', fontSize: 12 }}
+                      axisLine={{ stroke: '#9CA3AF' }}
+                      tickLine={{ stroke: '#9CA3AF' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: '#4B5563', fontSize: 12 }}
+                      axisLine={{ stroke: '#9CA3AF' }}
+                      tickLine={{ stroke: '#9CA3AF' }}
+                      tickFormatter={(value) => `$${value}`}
+                    />
+                    <Tooltip 
+                      formatter={(value) => `$${value.toFixed(2)}`}
+                      labelStyle={{ color: '#111827', fontWeight: 'bold' }}
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                        padding: '12px'
+                      }}
+                      cursor={{ strokeDasharray: '3 3' }}
+                    />
+                    <Legend
+                      wrapperStyle={{
+                        paddingTop: '20px'
+                      }}
+                      formatter={(value) => (
+                        <span style={{ color: '#4B5563', fontWeight: 500 }}>{value}</span>
+                      )}
+                    />
+                    {categories.filter(cat => cat.name !== 'Monthly Income').map((cat) => (
+                      <Area
+                        key={cat.dataKey}
+                        type="monotone"
+                        dataKey={cat.dataKey}
+                        name={cat.name}
+                        stroke={cat.color.replace('bg-', '#').replace('500', '600')}
+                        fill={`url(#color${cat.dataKey})`}
+                        fillOpacity={1}
+                        strokeWidth={2}
+                      />
                     ))}
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value) => `$${value.toFixed(2)}`}
-                    labelStyle={{ color: '#111827' }}
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.5rem'
-                    }}
-                  />
-                  <Legend />
-                  {categories.map((cat) => (
-                    <Area
-                      key={cat.dataKey}
-                      type="monotone"
-                      dataKey={cat.dataKey}
-                      name={cat.name}
-                      stroke={cat.color.replace('bg-', '#').replace('500', '400')}
-                      fill={`url(#color${cat.dataKey})`}
-                      fillOpacity={1}
-                      stackId="1"
-                    />
-                  ))}
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
 
-          {/* Add Budget Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-lg p-6"
-          >
-            <h2 className="text-xl font-semibold mb-4">Add Monthly Budget</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {categories.map((category) => (
-                <div key={category.name} className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    {category.name}
-                  </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-                      placeholder="0.00"
+            {/* Income vs Expenses Bar Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-indigo-100 hover:border-indigo-300 transition-all"
+            >
+              <h2 className="text-xl font-semibold mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Income vs Expenses</h2>
+              <div className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.9}/>
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.2}/>
+                      </linearGradient>
+                      <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.9}/>
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0.2}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                    <XAxis 
+                      dataKey="month" 
+                      tick={{ fill: '#4B5563', fontSize: 12 }}
+                      axisLine={{ stroke: '#9CA3AF' }}
+                      tickLine={{ stroke: '#9CA3AF' }}
                     />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button className="mt-6 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
-              Save Budget
-            </button>
-          </motion.div>
+                    <YAxis 
+                      tick={{ fill: '#4B5563', fontSize: 12 }}
+                      axisLine={{ stroke: '#9CA3AF' }}
+                      tickLine={{ stroke: '#9CA3AF' }}
+                      tickFormatter={(value) => `$${value}`}
+                    />
+                    <Tooltip 
+                      formatter={(value) => `$${value.toFixed(2)}`}
+                      labelStyle={{ color: '#111827', fontWeight: 'bold' }}
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                        padding: '12px'
+                      }}
+                      cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                    />
+                    <Legend
+                      wrapperStyle={{
+                        paddingTop: '20px'
+                      }}
+                      formatter={(value) => (
+                        <span style={{ color: '#4B5563', fontWeight: 500 }}>{value}</span>
+                      )}
+                    />
+                    <Bar 
+                      dataKey="Monthly Income" 
+                      name="Income" 
+                      fill="#10B981"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar 
+                      dataKey="totalExpenses" 
+                      name="Total Expenses" 
+                      fill="#EF4444"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

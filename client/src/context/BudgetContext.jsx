@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const BudgetContext = createContext();
 
@@ -7,74 +8,111 @@ export function BudgetProvider({ children }) {
     currentMonth: {},
     history: []
   });
+  const { user } = useAuth();
+
+  // Fetch all budgets when user logs in
+  useEffect(() => {
+    if (user) {
+      fetchBudgets();
+    }
+  }, [user]);
+
+  // Fetch all budgets from API
+  const fetchBudgets = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/budgets', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        const formattedHistory = data.data.map(budget => ({
+          month: budget.monthYear,
+          monthKey: budget.monthKey,
+          ...budget.expenses,
+          'Monthly Income': budget.expenses['Monthly Income'] || 0,
+          totalExpenses: budget.totalExpenses
+        }));
+
+        // Sort history by date
+        formattedHistory.sort((a, b) => {
+          const [yearA, monthA] = a.monthKey.split('-');
+          const [yearB, monthB] = b.monthKey.split('-');
+          return new Date(yearA, monthA - 1) - new Date(yearB, monthB - 1);
+        });
+
+        setBudgetData({
+          currentMonth: formattedHistory[formattedHistory.length - 1] || {},
+          history: formattedHistory
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching budgets:', error);
+    }
+  };
 
   // Add new monthly data
-  const addMonthlyData = (expenses, date = new Date()) => {
-    const monthYear = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    
-    setBudgetData(prev => {
-      // Find if there's existing data for this month
-      const existingIndex = prev.history.findIndex(item => item.monthKey === monthKey);
-      const newHistory = [...prev.history];
-      
-      const monthData = {
-        month: monthYear,
-        monthKey,
-        ...expenses,
-        totalExpenses: Object.entries(expenses)
-          .filter(([key]) => key !== 'Monthly Income')
-          .reduce((sum, [_, value]) => sum + (value || 0), 0)
-      };
-
-      if (existingIndex >= 0) {
-        // Update existing month data
-        newHistory[existingIndex] = monthData;
-      } else {
-        // Add new month data
-        newHistory.push(monthData);
-      }
-
-      // Sort history by date
-      newHistory.sort((a, b) => {
-        const [yearA, monthA] = a.monthKey.split('-');
-        const [yearB, monthB] = b.monthKey.split('-');
-        return new Date(yearA, monthA - 1) - new Date(yearB, monthB - 1);
+  const addMonthlyData = async (expenses, date) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/budgets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          expenses,
+          date: date.toISOString()
+        })
       });
 
-      return {
-        currentMonth: expenses,
-        history: newHistory
-      };
-    });
+      const data = await response.json();
+      
+      if (data.success) {
+        await fetchBudgets(); // Refresh all budget data
+      }
+    } catch (error) {
+      console.error('Error saving budget:', error);
+    }
   };
 
   // Get data for charts
   const getChartData = () => {
-    return budgetData.history.map(month => ({
-      month: month.month,
-      income: month['Monthly Income'] || 0,
-      housing: month['Housing'] || 0,
-      transportation: month['Transportation'] || 0,
-      food: month['Food & Groceries'] || 0,
-      healthcare: month['Healthcare'] || 0,
-      entertainment: month['Entertainment'] || 0,
-      dining: month['Dining Out'] || 0,
-      education: month['Education'] || 0,
-      debt: month['Debt Payments'] || 0,
-      total: month.totalExpenses || 0
-    }));
+    return budgetData.history;
   };
 
   // Get current month's data
   const getCurrentMonth = () => budgetData.currentMonth;
+
+  // Get budget for a specific month
+  const getBudgetByMonth = async (monthKey) => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/budgets/${monthKey}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        return {
+          ...data.data,
+          expenses: data.data.expenses || {}
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching budget:', error);
+      return null;
+    }
+  };
 
   return (
     <BudgetContext.Provider value={{ 
       budgetData,
       addMonthlyData,
       getChartData,
-      getCurrentMonth
+      getCurrentMonth,
+      getBudgetByMonth,
+      fetchBudgets
     }}>
       {children}
     </BudgetContext.Provider>

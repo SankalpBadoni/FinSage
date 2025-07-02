@@ -1,6 +1,5 @@
 import { useBudget } from '../context/BudgetContext';
-import { useState, useRef, useEffect } from 'react';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -16,8 +15,6 @@ import {
   CreditCardIcon
 } from '@heroicons/react/24/outline';
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   XAxis,
@@ -101,51 +98,80 @@ export default function BudgetCalculator() {
   const [expenses, setExpenses] = useState({});
   const [focusedInput, setFocusedInput] = useState(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { addMonthlyData } = useBudget();
+  const { addMonthlyData, getBudgetByMonth } = useBudget();
 
-  // Calculate totals by category
+  // Load existing budget data when selected month changes
+  useEffect(() => {
+    const loadBudgetData = async () => {
+      setIsLoading(true);
+      const monthKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`;
+      const budgetData = await getBudgetByMonth(monthKey);
+      
+      if (budgetData && budgetData.expenses) {
+        setExpenses(budgetData.expenses);
+        setShowAnalysis(true);
+      } else {
+        setExpenses({});
+        setShowAnalysis(false);
+      }
+      setIsLoading(false);
+    };
+
+    loadBudgetData();
+  }, [selectedDate, getBudgetByMonth]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Ensure all numeric values are properly set
+    const formattedExpenses = {};
+    categories.forEach(category => {
+      formattedExpenses[category.name] = parseFloat(expenses[category.name]) || 0;
+    });
+
+    await addMonthlyData(formattedExpenses, selectedDate);
+    setShowAnalysis(true);
+    setIsLoading(false);
+  };
+
+  // Month selection helpers
+  const monthYear = selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  
+  const handleMonthChange = (change) => {
+    const newDate = new Date(selectedDate);
+    newDate.setMonth(selectedDate.getMonth() + change);
+    setSelectedDate(newDate);
+  };
+
+  // Calculate all budget values
   const calculations = {
     income: expenses['Monthly Income'] || 0,
     essential: categories
       .filter(cat => cat.type === 'essential')
-      .reduce((sum, cat) => sum + (expenses[cat.name] || 0), 0),
+      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
     lifestyle: categories
       .filter(cat => cat.type === 'lifestyle')
-      .reduce((sum, cat) => sum + (expenses[cat.name] || 0), 0),
+      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
     investment: categories
       .filter(cat => cat.type === 'investment')
-      .reduce((sum, cat) => sum + (expenses[cat.name] || 0), 0),
+      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
     debt: categories
       .filter(cat => cat.type === 'debt')
-      .reduce((sum, cat) => sum + (expenses[cat.name] || 0), 0),
+      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
   };
 
-  // Calculate savings and percentages
   const totalExpenses = calculations.essential + calculations.lifestyle + calculations.investment + calculations.debt;
   const monthlySavings = calculations.income - totalExpenses;
   const yearlySavings = monthlySavings * 12;
-
-  // Prepare chart data
-  const pieChartData = [
-    { name: 'Essential', value: calculations.essential, color: '#3B82F6' },
-    { name: 'Lifestyle', value: calculations.lifestyle, color: '#EC4899' },
-    { name: 'Investment', value: calculations.investment, color: '#6366F1' },
-    { name: 'Debt', value: calculations.debt, color: '#F43F5E' },
-    { name: 'Savings', value: monthlySavings > 0 ? monthlySavings : 0, color: '#10B981' },
-  ];
-
-  const barChartData = [
-    { name: 'Income', amount: calculations.income, color: '#10B981' },
-    { name: 'Expenses', amount: totalExpenses, color: '#F43F5E' },
-    { name: 'Savings', amount: monthlySavings > 0 ? monthlySavings : 0, color: '#6366F1' },
-  ];
 
   // Generate AI insights based on spending patterns
   const getInsights = () => {
     const insights = [];
     
-    // Income-based insights
     if (calculations.income > 0) {
       const savingsRate = (monthlySavings / calculations.income) * 100;
       if (savingsRate < 20) {
@@ -155,12 +181,10 @@ export default function BudgetCalculator() {
       }
     }
 
-    // Lifestyle spending insights
     if (calculations.lifestyle > calculations.essential * 0.6) {
       insights.push("Your lifestyle expenses are high relative to essentials. Look for areas to cut back");
     }
 
-    // Debt insights
     if (calculations.debt > calculations.income * 0.36) {
       insights.push("Your debt payments are above recommended levels. Consider debt consolidation");
     }
@@ -168,12 +192,7 @@ export default function BudgetCalculator() {
     return insights;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setShowAnalysis(true);
-    addMonthlyData(expenses);
-  };
-
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -188,6 +207,21 @@ export default function BudgetCalculator() {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
+
+  // Prepare chart data
+  const pieChartData = [
+    { name: 'Essential', value: calculations.essential, color: '#3B82F6' },
+    { name: 'Lifestyle', value: calculations.lifestyle, color: '#EC4899' },
+    { name: 'Investment', value: calculations.investment, color: '#6366F1' },
+    { name: 'Debt', value: calculations.debt, color: '#F43F5E' },
+    { name: 'Savings', value: monthlySavings > 0 ? monthlySavings : 0, color: '#10B981' },
+  ].filter(item => item.value > 0);
+
+  const barChartData = [
+    { name: 'Income', amount: calculations.income, color: '#10B981' },
+    { name: 'Expenses', amount: totalExpenses, color: '#F43F5E' },
+    { name: 'Savings', amount: monthlySavings > 0 ? monthlySavings : 0, color: '#6366F1' },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-white pt-1">
@@ -272,40 +306,68 @@ export default function BudgetCalculator() {
 
           <div className="relative">
             <motion.div 
-              className="flex items-center space-x-4 mb-6"
+              className="flex items-center justify-between mb-6"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <motion.div
-                animate={{
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 20,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              >
-                <SparklesIcon className="w-8 h-8 text-indigo-600" />
-              </motion.div>
-              <div>
-                <motion.h2 
-                  className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
+              <div className="flex items-center space-x-4">
+                <motion.div
+                  animate={{
+                    rotate: [0, 360],
+                  }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
                 >
-                  Smart Budget Calculator
-                </motion.h2>
-                <motion.p 
-                  className="text-gray-600 text-lg mt-2"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
+                  <SparklesIcon className="w-8 h-8 text-indigo-600" />
+                </motion.div>
+                <div>
+                  <motion.h2 
+                    className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Smart Budget Calculator
+                  </motion.h2>
+                  <motion.p 
+                    className="text-gray-600 text-lg mt-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    Plan your financial future with AI-powered insights
+                  </motion.p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
+                  onClick={() => handleMonthChange(-1)}
                 >
-                  Plan your financial future with AI-powered insights
-                </motion.p>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </motion.button>
+
+                <span className="text-lg font-medium text-gray-700">{monthYear}</span>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
+                  onClick={() => handleMonthChange(1)}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
               </div>
             </motion.div>
 
@@ -316,7 +378,7 @@ export default function BudgetCalculator() {
                 animate="visible"
                 className="grid grid-cols-1 md:grid-cols-2 gap-8"
               >
-                {categories.map((category, index) => (
+                {categories.map((category) => (
                   <motion.div
                     key={category.name}
                     variants={itemVariants}
@@ -351,11 +413,13 @@ export default function BudgetCalculator() {
                             group-hover:border-indigo-300 group-hover:shadow-lg backdrop-blur-sm
                             bg-white/70"
                           placeholder={category.placeholder}
+                          value={expenses[category.name] || ''}
                           onFocus={() => setFocusedInput(category.name)}
                           onBlur={() => setFocusedInput(null)}
-                          onChange={(e) =>
-                            setExpenses({ ...expenses, [category.name]: parseFloat(e.target.value) || 0 })
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                            setExpenses(prev => ({ ...prev, [category.name]: value }));
+                          }}
                         />
                         <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
                           /mo
@@ -374,21 +438,15 @@ export default function BudgetCalculator() {
                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
                   shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed
                   relative overflow-hidden group"
-                disabled={!expenses['Monthly Income']}
+                disabled={isLoading || !expenses['Monthly Income']}
               >
                 <motion.span 
                   className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                  animate={{
-                    x: [-500, 500],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
+                  animate={{ x: [-500, 500] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 />
                 <span className="relative">
-                  {expenses['Monthly Income'] ? 'Analyze Budget' : 'Enter Monthly Income'}
+                  {isLoading ? 'Saving...' : expenses['Monthly Income'] ? 'Analyze Budget' : 'Enter Monthly Income'}
                 </span>
               </motion.button>
             </form>
