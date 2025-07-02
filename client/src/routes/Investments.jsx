@@ -1,114 +1,183 @@
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { CurrencyDollarIcon, ArrowTrendingUpIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
-const investmentOptions = [
-  {
-    title: 'Stock Market Index Funds',
-    description: 'Low-cost, diversified investment tracking major market indices.',
-    risk: 'Moderate',
-    expectedReturn: '8-10%',
-    icon: <ArrowTrendingUpIcon className="w-6 h-6" />,
-    color: 'bg-blue-500',
-  },
-  {
-    title: 'High-Yield Savings',
-    description: 'Safe option with guaranteed returns through bank deposits.',
-    risk: 'Low',
-    expectedReturn: '3-4%',
-    icon: <ShieldCheckIcon className="w-6 h-6" />,
-    color: 'bg-green-500',
-  },
-  {
-    title: 'Government Bonds',
-    description: 'Government-backed securities with fixed interest rates.',
-    risk: 'Very Low',
-    expectedReturn: '2-5%',
-    icon: <CurrencyDollarIcon className="w-6 h-6" />,
-    color: 'bg-yellow-500',
-  },
-];
+const RiskCard = ({ title, description, expectedReturn, riskLevel, minAmount, considerations }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="backdrop-blur-xl bg-black/30 rounded-xl overflow-hidden border border-white/10"
+  >
+    <div className="p-6">
+      <div className="flex items-center space-x-4">
+        <div className={`${
+          riskLevel === 'Low' ? 'bg-emerald-500' : 
+          riskLevel === 'Moderate' ? 'bg-amber-500' : 
+          'bg-rose-500'
+        } bg-opacity-20 p-3 rounded-lg`}>
+          {riskLevel === 'Low' ? <ShieldCheckIcon className="w-6 h-6 text-emerald-400" /> :
+           riskLevel === 'Moderate' ? <ArrowTrendingUpIcon className="w-6 h-6 text-amber-400" /> :
+           <CurrencyDollarIcon className="w-6 h-6 text-rose-400" />}
+        </div>
+        <div>
+          <h3 className="text-xl font-semibold text-white">{title}</h3>
+          <p className="text-sm text-white/70">Expected Return: {expectedReturn}</p>
+        </div>
+      </div>
+      <p className="mt-4 text-white/80">{description}</p>
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-sm font-medium text-white/60">Min. Investment:</span>
+        <span className="text-sm font-medium text-white">${minAmount.toLocaleString()}</span>
+      </div>
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-sm font-medium text-white/60">Risk Level:</span>
+        <span className={`
+          px-3 py-1 rounded-full text-sm font-medium
+          ${riskLevel === 'Low' ? 'bg-emerald-500/20 text-emerald-300' : 
+            riskLevel === 'Moderate' ? 'bg-amber-500/20 text-amber-300' : 
+            'bg-rose-500/20 text-rose-300'}
+        `}>
+          {riskLevel}
+        </span>
+      </div>
+      <div className="mt-4">
+        <h4 className="text-sm font-medium text-white/60 mb-2">Key Considerations:</h4>
+        <ul className="space-y-2">
+          {considerations.map((item, index) => (
+            <li key={index} className="text-sm text-white/80 flex items-center">
+              <span className="mr-2">•</span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <button className="mt-6 w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2 px-4 rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-500/20">
+        Learn More
+      </button>
+    </div>
+  </motion.div>
+);
 
 export default function Investments() {
+  const [recommendations, setRecommendations] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const savedAmount = 5000; // This would come from your actual savings calculation
 
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/api/investments/recommendations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ savings: savedAmount })
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch recommendations');
+        
+        const data = await response.json();
+        setRecommendations(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, [savedAmount]);
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-8 mb-8"
+          className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-8 mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900">Investment Recommendations</h1>
-          <p className="mt-2 text-gray-600">
-            Based on your savings of <span className="font-semibold text-green-600">${savedAmount}</span>,
-            here are some investment options to consider
+          <h1 className="text-3xl font-bold text-white">Investment Recommendations</h1>
+          <p className="mt-2 text-white/80">
+            Based on your savings of <span className="font-semibold text-emerald-400">${savedAmount.toLocaleString()}</span>,
+            here are personalized investment options tailored to different risk levels
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {investmentOptions.map((option, index) => (
-            <motion.div
-              key={option.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl shadow-lg overflow-hidden"
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
+            <p className="text-white/80 mt-4">Generating personalized recommendations...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-rose-400">Error: {error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-rose-500/20 text-rose-300 rounded-md hover:bg-rose-500/30"
             >
-              <div className={`${option.color} bg-opacity-10 p-6`}>
-                <div className="flex items-center space-x-4">
-                  <div className={`${option.color} p-3 rounded-lg`}>
-                    {option.icon}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{option.title}</h3>
-                    <p className="text-sm text-gray-600">Expected Return: {option.expectedReturn}</p>
-                  </div>
+              Try Again
+            </button>
+          </div>
+        ) : recommendations && (
+          <div className="space-y-8">
+            {recommendations.lowRisk.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white/90 mb-4">Conservative Investments</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {recommendations.lowRisk.map((option, index) => (
+                    <RiskCard key={index} {...option} riskLevel="Low" />
+                  ))}
                 </div>
-                <p className="mt-4 text-gray-600">{option.description}</p>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500">Risk Level:</span>
-                  <span className={`
-                    px-3 py-1 rounded-full text-sm font-medium
-                    ${option.risk === 'Low' ? 'bg-green-100 text-green-800' : 
-                      option.risk === 'Moderate' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-red-100 text-red-800'}
-                  `}>
-                    {option.risk}
-                  </span>
-                </div>
-                <button className="mt-6 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
-                  Learn More
-                </button>
               </div>
-            </motion.div>
-          ))}
-        </div>
+            )}
+
+            {recommendations.moderateRisk.length > 0 && (
+              <div className="mt-12">
+                <h2 className="text-2xl font-bold text-white/90 mb-4">Balanced Investments</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {recommendations.moderateRisk.map((option, index) => (
+                    <RiskCard key={index} {...option} riskLevel="Moderate" />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {recommendations.highRisk.length > 0 && (
+              <div className="mt-12">
+                <h2 className="text-2xl font-bold text-white/90 mb-4">Growth Investments</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {recommendations.highRisk.map((option, index) => (
+                    <RiskCard key={index} {...option} riskLevel="High" />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-8 bg-white rounded-2xl shadow-lg p-8"
+          className="mt-12 backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-8"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Smart Investment Tips</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Smart Investment Tips</h2>
           <ul className="space-y-4">
             <li className="flex items-start">
-              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-green-600">✓</span>
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <span className="text-emerald-400">✓</span>
               </div>
-              <p className="ml-3 text-gray-600">Diversify your portfolio across different asset classes</p>
+              <p className="ml-3 text-white/80">Diversify your portfolio across different asset classes and risk levels</p>
             </li>
             <li className="flex items-start">
-              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-green-600">✓</span>
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <span className="text-emerald-400">✓</span>
               </div>
-              <p className="ml-3 text-gray-600">Start with low-risk investments if you're new to investing</p>
+              <p className="ml-3 text-white/80">Consider starting with lower-risk options and gradually increase exposure</p>
             </li>
             <li className="flex items-start">
-              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-green-600">✓</span>
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <span className="text-emerald-400">✓</span>
               </div>
-              <p className="ml-3 text-gray-600">Consider consulting with a financial advisor for personalized advice</p>
+              <p className="ml-3 text-white/80">Regularly review and rebalance your portfolio based on performance</p>
             </li>
           </ul>
         </motion.div>

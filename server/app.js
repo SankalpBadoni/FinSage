@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.route.js';
 import budgetRoutes from './routes/budget.route.js';
+import investmentRoutes from './routes/investment.route.js';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(cors({
 
 app.use('/api/auth', authRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/investments', investmentRoutes);
 
 const PORT = process.env.PORT || 4000;
 
