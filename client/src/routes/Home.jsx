@@ -1,149 +1,109 @@
-import { motion, useMotionValue, useTransform, useSpring, useScroll, useInView } from 'framer-motion';
+import { motion, useScroll, useInView } from 'framer-motion';
 import { 
   ArrowRightIcon, 
   ChartBarIcon, 
   BanknotesIcon, 
   ArrowTrendingUpIcon, 
   ChartPieIcon,
-  SparklesIcon,
-  LightBulbIcon,
   ShieldCheckIcon,
-  CurrencyDollarIcon,
-  ArrowsRightLeftIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  StarIcon
 } from '@heroicons/react/24/outline';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useState, useRef, useEffect } from 'react';
 
 const features = [
   {
-    title: 'AI-Powered Insights',
-    description: 'Advanced algorithms analyze your spending patterns to provide personalized financial recommendations.',
-    icon: <SparklesIcon className="w-6 h-6" />,
-    color: 'from-violet-400 to-violet-600',
-    direction: 'left'
-  },
-  {
-    title: 'Smart Budget Tracking',
-    description: 'Real-time expense tracking with automatic categorization and trend analysis.',
+    title: 'Smart Expense Tracking',
+    description: 'Automatically categorize and track your spending patterns with our intelligent expense monitoring system.',
     icon: <ChartBarIcon className="w-6 h-6" />,
-    color: 'from-blue-400 to-blue-600',
-    direction: 'right'
+    color: 'from-slate-600 to-slate-800'
   },
   {
-    title: 'Intelligent Savings',
-    description: 'Dynamic savings goals with AI-driven strategies to help you save more effectively.',
+    title: 'Budget Planning',
+    description: 'Create personalized budgets based on your income and lifestyle, with smart recommendations for each spending category.',
     icon: <BanknotesIcon className="w-6 h-6" />,
-    color: 'from-purple-400 to-purple-600',
-    direction: 'left'
+    color: 'from-blue-700 to-blue-900'
   },
   {
-    title: 'Investment Portfolio',
-    description: 'Personalized investment recommendations based on your risk profile and goals.',
-    icon: <ArrowTrendingUpIcon className="w-6 h-6" />,
-    color: 'from-green-400 to-green-600',
-    direction: 'right'
-  },
-  {
-    title: 'Secure Transactions',
-    description: 'Bank-grade encryption and security protocols to protect your financial data.',
+    title: 'Savings Goals',
+    description: 'Set and track your savings goals with visual progress indicators and achievement milestones.',
     icon: <ShieldCheckIcon className="w-6 h-6" />,
-    color: 'from-pink-400 to-pink-600',
-    direction: 'left'
+    color: 'from-emerald-700 to-emerald-900'
   },
   {
-    title: 'Community Insights',
-    description: 'Learn from a community of successful investors and financial experts.',
+    title: 'AI-Powered Insights',
+    description: 'Get personalized recommendations on where to cut expenses and how to optimize your spending habits.',
+    icon: <ArrowTrendingUpIcon className="w-6 h-6" />,
+    color: 'from-amber-600 to-amber-800'
+  },
+  {
+    title: 'Secure Data',
+    description: 'Your financial data is protected with bank-level encryption and secure cloud storage.',
+    icon: <ShieldCheckIcon className="w-6 h-6" />,
+    color: 'from-red-700 to-red-900'
+  },
+  {
+    title: 'Investment Guidance',
+    description: 'Receive tailored investment suggestions based on your savings potential and financial goals.',
     icon: <UserGroupIcon className="w-6 h-6" />,
-    color: 'from-yellow-400 to-yellow-600',
-    direction: 'right'
+    color: 'from-purple-700 to-purple-900'
   },
 ];
 
 const testimonials = [
   {
-    name: 'Sarah Johnson',
+    name: 'Emily Rodriguez',
+    role: 'Young Professional',
+    content: 'This app helped me find over $300 in monthly savings! The AI suggestions were spot-on, and now I\'m finally building my emergency fund.',
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    rating: 5
+  },
+  {
+    name: 'Marcus Chen',
     role: 'Small Business Owner',
-    content: 'FinSmart helped me save 30% more each month while growing my business investment portfolio.',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    content: 'I was amazed to see how much I could save by tracking my expenses. The investment suggestions helped me put my savings to work.',
+    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    rating: 5
   },
   {
-    name: 'Michael Chen',
-    role: 'Tech Professional',
-    content: 'The AI insights are like having a personal financial advisor. Incredibly powerful yet easy to use.',
-    image: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  },
-  {
-    name: 'Emma Rodriguez',
-    role: 'Freelancer',
-    content: 'Finally, an app that understands variable income! The savings recommendations are spot-on.',
-    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    name: 'Sarah Thompson',
+    role: 'Freelance Designer',
+    content: 'Perfect for managing irregular income! The budgeting tools helped me smooth out my spending and build a reliable savings plan.',
+    image: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    rating: 5
   },
 ];
 
 const stats = [
   { 
+    label: 'Average Savings Found',
+    value: '$450+',
+    description: 'Monthly savings potential per user',
+    icon: <ChartPieIcon className="w-8 h-8" />
+  },
+  { 
     label: 'Active Users',
-    value: '50K+',
-    description: 'Trust FinSmart for their finances',
-    color: 'from-blue-400 to-blue-600'
+    value: '100K+',
+    description: 'Growing community of savers',
+    icon: <UserGroupIcon className="w-8 h-8" />
   },
   { 
-    label: 'Total Savings',
-    value: '$2.5M+',
-    description: 'Saved by our users this year',
-    color: 'from-green-400 to-green-600'
+    label: 'Expense Categories',
+    value: '50+',
+    description: 'Detailed spending insights',
+    icon: <ArrowTrendingUpIcon className="w-8 h-8" />
   },
   { 
-    label: 'ROI Average',
-    value: '32%',
-    description: 'Annual return on investments',
-    color: 'from-purple-400 to-purple-600'
-  },
-  { 
-    label: 'AI Insights',
-    value: '24/7',
-    description: 'Continuous financial monitoring',
-    color: 'from-pink-400 to-pink-600'
+    label: 'Success Rate',
+    value: '92%',
+    description: 'Users achieving savings goals',
+    icon: <StarIcon className="w-8 h-8" />
   },
 ];
 
-function FloatingCard({ delay = 0, children, className = "" }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 100, rotateX: -30 }}
-      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-      transition={{ 
-        duration: 1.2, 
-        delay,
-        type: "spring",
-        stiffness: 100,
-        damping: 15
-      }}
-      whileHover={{ 
-        y: -10, 
-        rotateY: 5,
-        scale: 1.02,
-        transition: { duration: 0.3 }
-      }}
-      className={`transform-gpu perspective-1000 ${className}`}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function AnimatedCard() {
+function ProfessionalCard() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const rotateX = useTransform(mouseY, [-150, 150], [25, -25]);
-  const rotateY = useTransform(mouseX, [-150, 150], [-25, 25]);
-
-  const springConfig = { damping: 15, stiffness: 300 };
-  const rotateXSpring = useSpring(rotateX, springConfig);
-  const rotateYSpring = useSpring(rotateY, springConfig);
 
   const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -154,444 +114,302 @@ function AnimatedCard() {
       x: e.clientX - centerX,
       y: e.clientY - centerY,
     });
-    
-    mouseX.set(e.clientX - centerX);
-    mouseY.set(e.clientY - centerY);
   };
 
   const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
+    setMousePosition({ x: 0, y: 0 });
   };
 
   return (
     <motion.div
-      className="relative perspective-1000"
-      style={{
-        rotateX: rotateXSpring,
-        rotateY: rotateYSpring,
-      }}
+      className="relative group"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      style={{
+        transform: `perspective(1000px) rotateY(${mousePosition.x * 0.02}deg) rotateX(${-mousePosition.y * 0.02}deg)`,
+      }}
     >
-      <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 transform-gpu preserve-3d hover:shadow-3xl transition-all duration-500 border border-white/20">
-        {/* Card Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Your Portfolio</h3>
-            <p className="text-sm text-gray-500">Live Performance</p>
-          </div>
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-2xl shadow-lg">
-            <ChartPieIcon className="w-6 h-6 text-white" />
-          </div>
-        </div>
-
-        {/* Animated Stats */}
-        <div className="space-y-4">
-          {[
-            { label: 'Total Balance', amount: '$24,580', color: 'from-green-500 to-emerald-600' },
-            { label: 'Monthly Savings', amount: '$1,240', color: 'from-blue-500 to-cyan-600' },
-            { label: 'Investments', amount: '$12,340', color: 'from-purple-500 to-pink-600' },
-            { label: 'Growth Rate', amount: '+18.5%', color: 'from-orange-500 to-red-600' }
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 + 0.5 }}
-              className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-white border border-gray-100 hover:shadow-md transition-all duration-300"
-            >
-              <span className="text-gray-600 font-medium">{stat.label}</span>
-              <span className={`font-bold px-4 py-2 rounded-xl bg-gradient-to-r ${stat.color} text-white shadow-lg`}>
-                {stat.amount}
-              </span>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mt-8">
-          <div className="flex justify-between text-sm mb-3">
-            <span className="text-gray-600 font-medium">Goal Progress</span>
-            <span className="text-gray-900 font-bold">87%</span>
-          </div>
-          <div className="h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
-            <motion.div
-              className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-lg"
-              initial={{ width: 0 }}
-              animate={{ width: '87%' }}
-              transition={{ duration: 2, ease: 'easeOut', delay: 1 }}
-            />
+      <div className="w-full max-w-lg bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-semibold text-white">Monthly Overview</h3>
+              <p className="text-slate-300 text-sm">Your Financial Summary</p>
+            </div>
+            <div className="bg-white/10 p-3 rounded-lg">
+              <ChartPieIcon className="w-6 h-6 text-white" />
+            </div>
           </div>
         </div>
 
-        {/* Floating Elements for 3D effect */}
-        <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-purple-400/30 to-indigo-400/30 rounded-full blur-xl transform rotate-12 -z-10" />
-        <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-tr from-indigo-400/30 to-purple-400/30 rounded-full blur-xl transform -rotate-12 -z-10" />
+        {/* Content */}
+        <div className="p-8 space-y-6">
+          {/* Key Metrics */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-slate-900 mb-1">$5,200</div>
+              <div className="text-sm text-slate-600 font-medium">Monthly Income</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-emerald-600 mb-1">$850</div>
+              <div className="text-sm text-slate-600 font-medium">Potential Savings</div>
+            </div>
+          </div>
+
+          {/* Performance Metrics */}
+          <div className="space-y-4">
+            {[
+              { label: 'Housing & Utilities', amount: '$1,800', percentage: '35%', color: 'bg-blue-600' },
+              { label: 'Food & Groceries', amount: '$800', percentage: '15%', color: 'bg-emerald-600' },
+              { label: 'Transportation', amount: '$600', percentage: '12%', color: 'bg-amber-600' },
+              { label: 'Entertainment', amount: '$400', percentage: '8%', color: 'bg-slate-600' }
+            ].map((item, index) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 + 0.5 }}
+                className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${item.color}`} />
+                  <span className="text-slate-700 font-medium text-sm">{item.label}</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-slate-900 font-semibold text-sm">{item.amount}</div>
+                  <div className="text-slate-500 text-xs">{item.percentage}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Performance Chart Placeholder */}
+          <div className="bg-slate-50 rounded-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-slate-700 font-medium text-sm">Monthly Budget Progress</span>
+              <span className="text-emerald-600 font-semibold text-sm">16% Saved</span>
+            </div>
+            <div className="h-16 bg-gradient-to-r from-slate-200 via-emerald-100 to-emerald-200 rounded-md relative overflow-hidden">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-blue-500 opacity-60"
+                initial={{ width: 0 }}
+                animate={{ width: '76%' }}
+                transition={{ duration: 2, ease: 'easeOut', delay: 1 }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </motion.div>
   );
 }
 
-function HeroBackground() {
+function SophisticatedBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {/* Animated Mesh Gradient */}
-      <motion.div 
+      {/* Professional gradient base */}
+      <div 
         className="absolute inset-0"
         style={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)",
-          backgroundSize: "400% 400%"
-        }}
-        animate={{
-          backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "linear"
+          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%)",
         }}
       />
       
-      {/* Glassmorphism overlay */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" />
+      {/* Subtle overlay */}
+      <div className="absolute inset-0 bg-black/20" />
       
-      {/* Dynamic geometric shapes */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={i}
-          className={`absolute rounded-full bg-gradient-to-r ${
-            i % 4 === 0 ? 'from-white/20 to-white/10' :
-            i % 4 === 1 ? 'from-blue-400/20 to-purple-400/10' :
-            i % 4 === 2 ? 'from-purple-400/20 to-pink-400/10' :
-            'from-pink-400/20 to-indigo-400/10'
-          } backdrop-blur-sm`}
-          style={{
-            width: `${150 + Math.random() * 200}px`,
-            height: `${150 + Math.random() * 200}px`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            scale: [1, 1.2, 0.8, 1],
-            rotate: [0, 180, 360],
-            x: [0, Math.random() * 100 - 50, 0],
-            y: [0, Math.random() * 100 - 50, 0],
-          }}
-          transition={{
-            duration: 15 + Math.random() * 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: Math.random() * 5
-          }}
-        />
-      ))}
+      {/* Geometric patterns */}
+      <div className="absolute inset-0 opacity-10">
+        {[...Array(12)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute border border-white/20"
+            style={{
+              width: `${200 + Math.random() * 300}px`,
+              height: `${200 + Math.random() * 300}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              borderRadius: i % 3 === 0 ? '50%' : '0%',
+            }}
+            animate={{
+              rotate: [0, 360],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 20 + Math.random() * 10,
+              repeat: Infinity,
+              ease: "linear",
+              delay: Math.random() * 5
+            }}
+          />
+        ))}
+      </div>
       
-      {/* Floating particles */}
-      {[...Array(200)].map((_, i) => (
-        <motion.div
-          key={i}
-          className={`absolute rounded-full ${
-            i % 3 === 0 ? 'w-2 h-2 bg-white/60' : 
-            i % 3 === 1 ? 'w-1 h-1 bg-blue-300/80' : 
-            'w-3 h-3 bg-purple-300/60'
-          } shadow-lg`}
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            y: [0, -100 - Math.random() * 200, 0],
-            x: [0, (Math.random() - 0.5) * 100, 0],
-            opacity: [0, 1, 0],
-            scale: [0, 1, 0],
-          }}
-          transition={{
-            duration: 8 + Math.random() * 12,
-            repeat: Infinity,
-            delay: Math.random() * 8,
-            ease: "easeInOut"
-          }}
-        />
-      ))}
+      {/* Professional dots pattern */}
+      <div className="absolute inset-0 opacity-30">
+        {[...Array(50)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              opacity: [0.3, 0.8, 0.3],
+              scale: [1, 1.5, 1],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 4,
+              repeat: Infinity,
+              delay: Math.random() * 3,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
-export default function Home() {
+export default function ProfessionalFinanceHome() {
   const { scrollYProgress } = useScroll();
   const heroRef = useRef(null);
   const isHeroInView = useInView(heroRef, { once: true });
-  
-  const scaleProgress = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
-  const opacityProgress = useTransform(scrollYProgress, [0, 0.5], [1, 0.3]);
-
-  // Text animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* COMPLETELY REDESIGNED HERO SECTION */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Revolutionary Background */}
-        <HeroBackground />
+    <div className="min-h-screen bg-slate-50 w-full">
+      {/* SOPHISTICATED HERO SECTION */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden w-full">
+        <SophisticatedBackground />
         
-        {/* Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-screen py-20">
+        <div className="relative z-10 w-full px-4 sm:px-6 lg:px-12 2xl:px-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-16 items-center min-h-screen py-20 w-full">
             
-            {/* Left Column - Enhanced Text Content */}
+            {/* Left Column - Professional Content */}
             <motion.div
               ref={heroRef}
-              initial={{ opacity: 0, x: -100 }}
-              animate={isHeroInView ? { 
-                opacity: 1, 
-                x: 0,
-              } : {}}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              initial={{ opacity: 0, x: -60 }}
+              animate={isHeroInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 1, ease: "easeOut" }}
               className="text-left space-y-8"
             >
-              {/* Floating Badge */}
+              {/* Professional Badge */}
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-xl rounded-full px-6 py-3 border border-white/30 shadow-lg"
+                className="inline-flex items-center space-x-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20"
               >
-                <SparklesIcon className="w-5 h-5 text-white" />
-                <span className="text-white font-medium">AI-Powered Financial Intelligence</span>
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                <span className="text-white font-medium text-sm">Smart Personal Finance Management</span>
               </motion.div>
 
-              {/* Main Headline with Advanced Typography */}
+              {/* Main Headline */}
               <motion.div
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.4 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
                 className="space-y-4"
               >
-                <h1 className="text-7xl lg:text-8xl font-black leading-none">
-                  <motion.span
-                    className="block text-white drop-shadow-2xl"
-                    initial={{ opacity: 0, rotateX: -90 }}
-                    animate={{ opacity: 1, rotateX: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                  >
-                    Smart
-                  </motion.span>
-                  <motion.span
-                    className="block bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent drop-shadow-2xl"
-                    initial={{ opacity: 0, rotateX: -90 }}
-                    animate={{ opacity: 1, rotateX: 0 }}
-                    transition={{ duration: 0.8, delay: 0.8 }}
-                  >
-                    Finance
-                  </motion.span>
-                  <motion.span
-                    className="block text-white drop-shadow-2xl"
-                    initial={{ opacity: 0, rotateX: -90 }}
-                    animate={{ opacity: 1, rotateX: 0 }}
-                    transition={{ duration: 0.8, delay: 1.0 }}
-                  >
-                    Revolution
-                  </motion.span>
+                <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-white">
+                  <span className="block">Take Control of</span>
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
+                    Your Finances
+                  </span>
                 </h1>
               </motion.div>
 
-              {/* Enhanced Description */}
+              {/* Professional Description */}
               <motion.p 
-                className="text-2xl text-white/90 leading-relaxed max-w-xl backdrop-blur-sm bg-white/10 rounded-2xl p-6 shadow-xl border border-white/20"
-                initial={{ opacity: 0, y: 30 }}
+                className="text-xl text-slate-200 leading-relaxed max-w-2xl"
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.2 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
               >
-                Transform your financial future with cutting-edge AI technology. 
-                <span className="font-semibold text-yellow-300"> Track, save, invest, and grow</span> like never before.
+                Track your income and expenses effortlessly. Get personalized insights on where you 
+                can save money, and learn how to invest your savings wisely. Start your journey to 
+                financial freedom today.
               </motion.p>
 
-              {/* Advanced CTA Section */}
+              {/* Professional CTAs */}
               <motion.div 
-                className="flex flex-col sm:flex-row gap-6 pt-4"
-                initial={{ opacity: 0, y: 30 }}
+                className="flex flex-col sm:flex-row gap-4 pt-6"
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.4 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
               >
-                <motion.div
-                  whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-                  whileTap={{ scale: 0.95 }}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold shadow-lg transition-colors duration-200 flex items-center space-x-2"
                 >
-                  <Link
-                    to="/budget"
-                    className="group relative overflow-hidden px-10 py-5 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 text-white rounded-full font-bold text-lg shadow-2xl transition-all duration-300 inline-flex items-center space-x-3"
-                  >
-                    <span className="relative z-10">Start Your Journey</span>
-                    <motion.div
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      <ArrowRightIcon className="w-6 h-6 relative z-10" />
-                    </motion.div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Link to="/budget">
+                    <span>Start Budgeting</span>
                   </Link>
-                </motion.div>
+                    <ArrowRightIcon className="w-5 h-5" />
+                </motion.button>
 
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-lg font-semibold border border-white/20 hover:bg-white/20 transition-all duration-200"
                 >
-                  <button className="px-10 py-5 bg-white/20 backdrop-blur-xl text-white rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all duration-300 shadow-xl">
-                    Watch Demo
-                  </button>
-                </motion.div>
+                  View Demo
+                </motion.button>
               </motion.div>
 
               {/* Trust Indicators */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.6 }}
-                className="flex items-center space-x-8 pt-8"
+                transition={{ delay: 1 }}
+                className="flex items-center space-x-8 pt-8 border-t border-white/10"
               >
-                <div className="text-white/80">
-                  <div className="text-3xl font-bold">50K+</div>
-                  <div className="text-sm opacity-80">Happy Users</div>
+                <div className="text-white/90">
+                  <div className="text-2xl font-bold">30%</div>
+                  <div className="text-sm text-slate-300">Average Monthly Savings</div>
                 </div>
-                <div className="text-white/80">
-                  <div className="text-3xl font-bold">$2.5M+</div>
-                  <div className="text-sm opacity-80">Money Saved</div>
+                <div className="text-white/90">
+                  <div className="text-2xl font-bold">5min</div>
+                  <div className="text-sm text-slate-300">Setup Time</div>
                 </div>
-                <div className="text-white/80">
-                  <div className="text-3xl font-bold">99.9%</div>
-                  <div className="text-sm opacity-80">Uptime</div>
+                <div className="text-white/90">
+                  <div className="text-2xl font-bold">100%</div>
+                  <div className="text-sm text-slate-300">Free to Use</div>
                 </div>
               </motion.div>
             </motion.div>
 
-            {/* Right Column - Multiple Floating Cards */}
+            {/* Right Column - Professional Dashboard */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, delay: 0.8 }}
+              transition={{ duration: 1, delay: 0.6 }}
               className="relative h-full flex items-center justify-center"
             >
-              {/* Main Card */}
-              <div className="relative z-20">
-                <AnimatedCard />
-              </div>
-
-              {/* Floating Secondary Cards */}
-              <FloatingCard delay={1.5} className="absolute -top-10 -left-10 z-10">
-                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/30 w-48">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
-                      <ArrowTrendingUpIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-gray-800">Monthly Growth</div>
-                      <div className="text-xs text-gray-600">+24.5%</div>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-green-400 to-blue-500 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: '75%' }}
-                      transition={{ duration: 2, delay: 2 }}
-                    />
-                  </div>
-                </div>
-              </FloatingCard>
-
-              <FloatingCard delay={2} className="absolute -bottom-8 -right-8 z-10">
-                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/30 w-52">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm font-semibold text-gray-800">Smart Alerts</div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-xs text-gray-600 bg-green-100 rounded-lg p-2">
-                      💡 Save $120 by switching providers
-                    </div>
-                    <div className="text-xs text-gray-600 bg-blue-100 rounded-lg p-2">
-                      📈 Investment opportunity detected
-                    </div>
-                  </div>
-                </div>
-              </FloatingCard>
-
-              <FloatingCard delay={2.5} className="absolute top-1/2 -left-20 z-5">
-                <div className="bg-white/70 backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-white/20 w-40">
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full mx-auto mb-2 flex items-center justify-center">
-                      <CurrencyDollarIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="text-xs font-semibold text-gray-800">AI Savings</div>
-                    <div className="text-lg font-bold text-purple-600">$1,247</div>
-                  </div>
-                </div>
-              </FloatingCard>
+              <ProfessionalCard />
             </motion.div>
           </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center"
-          >
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-1 h-3 bg-white/70 rounded-full mt-2"
-            />
-          </motion.div>
-        </motion.div>
       </div>
 
-      {/* REST OF THE ORIGINAL CONTENT REMAINS UNCHANGED */}
-      <div className="relative pt-20 pb-12 overflow-hidden bg-gray-50">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Features Section */}
-          <div className="relative mt-32">
+      {/* FEATURES SECTION */}
+      <div className="relative py-24 bg-white w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-12 2xl:px-16">
+          <div className="w-full">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ type: "spring", stiffness: 100 }}
-                className="inline-block mb-4 p-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-2xl"
-              >
-                <SparklesIcon className="w-6 h-6 text-indigo-600" />
-              </motion.div>
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                Powerful Features
+              <h2 className="text-4xl font-bold text-slate-900 mb-6">
+                Smart Money Management
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Everything you need to take control of your financial future
+              <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+                Our easy-to-use tools help you understand your spending habits, find savings 
+                opportunities, and make better financial decisions.
               </p>
             </motion.div>
 
@@ -599,111 +417,114 @@ export default function Home() {
               {features.map((feature, index) => (
                 <motion.div
                   key={feature.title}
-                  initial={{ opacity: 0, x: feature.direction === 'left' ? -50 : 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ 
-                    duration: 0.5, 
-                    delay: index * 0.1,
-                    type: "spring",
-                    stiffness: 100
-                  }}
-                  className="group bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="bg-white border border-slate-200 rounded-xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
-                  <div className={`bg-gradient-to-r ${feature.color} w-12 h-12 rounded-lg flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`bg-gradient-to-r ${feature.color} w-12 h-12 rounded-lg flex items-center justify-center text-white mb-6`}>
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-4">{feature.title}</h3>
+                  <p className="text-slate-600 leading-relaxed">{feature.description}</p>
                 </motion.div>
               ))}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Stats Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mt-32 relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 to-purple-50 transform skew-y-3" />
-            <div className="relative">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {stats.map((stat, index) => (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 50 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      className="text-center"
-                    >
-                      <div className={`inline-block p-4 bg-gradient-to-r ${stat.color} rounded-2xl shadow-lg mb-4`}>
-                        <h3 className="text-4xl font-bold text-white">{stat.value}</h3>
-                      </div>
-                      <p className="text-lg font-semibold text-gray-900">{stat.label}</p>
-                      <p className="text-sm text-gray-600">{stat.description}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Testimonials Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mt-32 mb-20"
-          >
-            <div className="text-center mb-16">
-              <motion.div
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ type: "spring", stiffness: 100 }}
-                className="inline-block mb-4 p-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-2xl"
-              >
-                <UserGroupIcon className="w-6 h-6 text-indigo-600" />
-              </motion.div>
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                What Our Users Say
+      {/* STATS SECTION */}
+      <div className="relative py-24 bg-slate-900 w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-12 2xl:px-16">
+          <div className="w-full">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl font-bold text-white mb-6">
+                Real Results
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Join thousands of satisfied users who have transformed their financial lives
+              <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+                Join thousands of users who have transformed their financial habits and achieved their savings goals.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="text-center bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10"
+                >
+                  <div className="text-emerald-400 mb-4 flex justify-center">
+                    {stat.icon}
+                  </div>
+                  <div className="text-4xl font-bold text-white mb-2">{stat.value}</div>
+                  <div className="text-lg font-semibold text-slate-200 mb-1">{stat.label}</div>
+                  <div className="text-sm text-slate-400">{stat.description}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TESTIMONIALS SECTION */}
+      <div className="relative py-24 bg-slate-50 w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-12 2xl:px-16">
+          <div className="w-full">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl font-bold text-slate-900 mb-6">
+                User Success Stories
+              </h2>
+              <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+                Discover how people like you are saving more and spending smarter with our app.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={testimonial.name}
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.2 }}
-                  className="bg-white rounded-2xl shadow-lg p-8 relative"
+                  className="bg-white rounded-xl shadow-lg p-8 border border-slate-200"
                 >
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full opacity-50" />
-                  <div className="relative">
+                  <div className="flex items-center mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon key={i} className="w-5 h-5 text-amber-400 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-slate-600 mb-6 leading-relaxed italic">"{testimonial.content}"</p>
+                  <div className="flex items-center">
                     <img
                       src={testimonial.image}
                       alt={testimonial.name}
-                      className="w-16 h-16 rounded-full mb-4 border-2 border-indigo-100"
+                      className="w-12 h-12 rounded-full mr-4"
                     />
-                    <p className="text-gray-600 italic mb-4">{testimonial.content}</p>
                     <div>
-                      <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                      <p className="text-sm text-gray-500">{testimonial.role}</p>
+                      <h4 className="font-semibold text-slate-900">{testimonial.name}</h4>
+                      <p className="text-sm text-slate-600">{testimonial.role}</p>
                     </div>
                   </div>
                 </motion.div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>
