@@ -20,7 +20,7 @@ export function BudgetProvider({ children }) {
   // Fetch all budgets from API
   const fetchBudgets = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/budgets', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/budgets`, {
         credentials: 'include'
       });
       const data = await response.json();
@@ -54,7 +54,7 @@ export function BudgetProvider({ children }) {
   // Add new monthly data
   const addMonthlyData = async (expenses, date) => {
     try {
-      const response = await fetch('http://localhost:4000/api/budgets', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/budgets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -87,7 +87,7 @@ export function BudgetProvider({ children }) {
   // Get budget for a specific month
   const getBudgetByMonth = async (monthKey) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/budgets/${monthKey}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/budgets/${monthKey}`, {
         credentials: 'include'
       });
       const data = await response.json();
