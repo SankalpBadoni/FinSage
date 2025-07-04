@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { CurrencyDollarIcon, ArrowTrendingUpIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
-const RiskCard = ({ title, description, expectedReturn, riskLevel, minAmount, considerations }) => (
+const RiskCard = ({ name, description, expectedReturn, riskLevel, minAmount = 0, considerations = [] }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -20,15 +20,17 @@ const RiskCard = ({ title, description, expectedReturn, riskLevel, minAmount, co
            <CurrencyDollarIcon className="w-6 h-6 text-rose-400" />}
         </div>
         <div>
-          <h3 className="text-xl font-semibold text-white">{title}</h3>
+          <h3 className="text-xl font-semibold text-white">{name}</h3>
           <p className="text-sm text-white/70">Expected Return: {expectedReturn}</p>
         </div>
       </div>
       <p className="mt-4 text-white/80">{description}</p>
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-sm font-medium text-white/60">Min. Investment:</span>
-        <span className="text-sm font-medium text-white">${minAmount.toLocaleString()}</span>
-      </div>
+      {typeof minAmount === 'number' && (
+        <div className="mt-4 flex items-center justify-between">
+          <span className="text-sm font-medium text-white/60">Min. Investment:</span>
+          <span className="text-sm font-medium text-white">${minAmount.toLocaleString()}</span>
+        </div>
+      )}
       <div className="mt-4 flex items-center justify-between">
         <span className="text-sm font-medium text-white/60">Risk Level:</span>
         <span className={`
@@ -40,17 +42,19 @@ const RiskCard = ({ title, description, expectedReturn, riskLevel, minAmount, co
           {riskLevel}
         </span>
       </div>
-      <div className="mt-4">
-        <h4 className="text-sm font-medium text-white/60 mb-2">Key Considerations:</h4>
-        <ul className="space-y-2">
-          {considerations.map((item, index) => (
-            <li key={index} className="text-sm text-white/80 flex items-center">
-              <span className="mr-2">•</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {considerations && considerations.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-white/60 mb-2">Key Considerations:</h4>
+          <ul className="space-y-2">
+            {considerations.map((item, index) => (
+              <li key={index} className="text-sm text-white/80 flex items-center">
+                <span className="mr-2">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <button className="mt-6 w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2 px-4 rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-500/20">
         Learn More
       </button>
@@ -60,32 +64,34 @@ const RiskCard = ({ title, description, expectedReturn, riskLevel, minAmount, co
 
 export default function Investments() {
   const [recommendations, setRecommendations] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const savedAmount = 5000; // This would come from your actual savings calculation
+  const [savingsAmount, setSavingsAmount] = useState('');
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        const response = await fetch('http://localhost:4000/api/investments/recommendations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ savings: savedAmount })
-        });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!savingsAmount) return;
 
-        if (!response.ok) throw new Error('Failed to fetch recommendations');
-        
-        const data = await response.json();
-        setRecommendations(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('http://localhost:4000/api/investments/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ savings: parseFloat(savingsAmount) })
+      });
 
-    fetchRecommendations();
-  }, [savedAmount]);
+      if (!response.ok) throw new Error('Failed to fetch recommendations');
+      
+      const data = await response.json();
+      setRecommendations(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black py-8">
@@ -97,9 +103,30 @@ export default function Investments() {
         >
           <h1 className="text-3xl font-bold text-white">Investment Recommendations</h1>
           <p className="mt-2 text-white/80">
-            Based on your savings of <span className="font-semibold text-emerald-400">${savedAmount.toLocaleString()}</span>,
-            here are personalized investment options tailored to different risk levels
+            Enter your savings amount to get personalized investment options tailored to different risk levels
           </p>
+          <form onSubmit={handleSubmit} className="mt-4 flex items-center gap-4">
+            <div className="relative flex-1 max-w-xs">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60">$</span>
+              <input
+                type="number"
+                value={savingsAmount}
+                onChange={(e) => setSavingsAmount(e.target.value)}
+                placeholder="Enter your savings"
+                className="w-full pl-8 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
+                min="0"
+                step="100"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || !savingsAmount}
+            >
+              Get Recommendations
+            </button>
+          </form>
         </motion.div>
 
         {loading ? (
@@ -118,69 +145,96 @@ export default function Investments() {
             </button>
           </div>
         ) : recommendations && (
-          <div className="space-y-8">
-            {recommendations.lowRisk.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-white/90 mb-4">Conservative Investments</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {recommendations.lowRisk.map((option, index) => (
-                    <RiskCard key={index} {...option} riskLevel="Low" />
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-8 mb-8"
+            >
+              <p className="text-white/80">
+                Based on your savings of <span className="font-semibold text-emerald-400">${savingsAmount.toLocaleString()}</span>,
+                here are personalized investment options tailored to different risk levels:
+              </p>
+            </motion.div>
+
+            <div className="space-y-8">
+              {recommendations.lowRisk.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-white/90 mb-4">Conservative Investments</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">                  {recommendations.lowRisk.map((option, index) => (
+                    <RiskCard 
+                      key={index} 
+                      {...option} 
+                      name={option.name || option.title}
+                      riskLevel="Low" 
+                    />
                   ))}
                 </div>
               </div>
             )}
 
             {recommendations.moderateRisk.length > 0 && (
-              <div className="mt-12">
-                <h2 className="text-2xl font-bold text-white/90 mb-4">Balanced Investments</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {recommendations.moderateRisk.map((option, index) => (
-                    <RiskCard key={index} {...option} riskLevel="Moderate" />
-                  ))}
+                <div className="mt-12">
+                  <h2 className="text-2xl font-bold text-white/90 mb-4">Balanced Investments</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {recommendations.moderateRisk.map((option, index) => (
+                      <RiskCard 
+                        key={index} 
+                        {...option} 
+                        name={option.name || option.title}
+                        riskLevel="Moderate" 
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {recommendations.highRisk.length > 0 && (
-              <div className="mt-12">
-                <h2 className="text-2xl font-bold text-white/90 mb-4">Growth Investments</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {recommendations.highRisk.map((option, index) => (
-                    <RiskCard key={index} {...option} riskLevel="High" />
-                  ))}
+              {recommendations.highRisk.length > 0 && (
+                <div className="mt-12">
+                  <h2 className="text-2xl font-bold text-white/90 mb-4">Growth Investments</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {recommendations.highRisk.map((option, index) => (
+                      <RiskCard 
+                        key={index} 
+                        {...option} 
+                        name={option.name || option.title}
+                        riskLevel="High" 
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-12 backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-8"
+            >
+              <h2 className="text-2xl font-bold text-white mb-4">Smart Investment Tips</h2>
+              <ul className="space-y-4">
+                <li className="flex items-start">
+                  <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <span className="text-emerald-400">✓</span>
+                  </div>
+                  <p className="ml-3 text-white/80">Diversify your portfolio across different asset classes and risk levels</p>
+                </li>
+                <li className="flex items-start">
+                  <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <span className="text-emerald-400">✓</span>
+                  </div>
+                  <p className="ml-3 text-white/80">Consider starting with lower-risk options and gradually increase exposure</p>
+                </li>
+                <li className="flex items-start">
+                  <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <span className="text-emerald-400">✓</span>
+                  </div>
+                  <p className="ml-3 text-white/80">Regularly review and rebalance your portfolio based on performance</p>
+                </li>
+              </ul>
+            </motion.div>
+          </>
         )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-12 backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-8"
-        >
-          <h2 className="text-2xl font-bold text-white mb-4">Smart Investment Tips</h2>
-          <ul className="space-y-4">
-            <li className="flex items-start">
-              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <span className="text-emerald-400">✓</span>
-              </div>
-              <p className="ml-3 text-white/80">Diversify your portfolio across different asset classes and risk levels</p>
-            </li>
-            <li className="flex items-start">
-              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <span className="text-emerald-400">✓</span>
-              </div>
-              <p className="ml-3 text-white/80">Consider starting with lower-risk options and gradually increase exposure</p>
-            </li>
-            <li className="flex items-start">
-              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <span className="text-emerald-400">✓</span>
-              </div>
-              <p className="ml-3 text-white/80">Regularly review and rebalance your portfolio based on performance</p>
-            </li>
-          </ul>
-        </motion.div>
       </div>
     </div>
   );
