@@ -12,7 +12,9 @@ import {
   HeartIcon,
   AcademicCapIcon,
   BanknotesIcon,
-  CreditCardIcon
+  CreditCardIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon 
 } from '@heroicons/react/24/outline';
 import {
   BarChart,
@@ -149,19 +151,19 @@ export default function BudgetCalculator() {
 
   // Calculate all budget values
   const calculations = {
-    income: expenses['Monthly Income'] || 0,
+    income: Number(expenses['Monthly Income']) || 0,
     essential: categories
       .filter(cat => cat.type === 'essential')
-      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
+      .reduce((sum, cat) => sum + (Number(expenses[cat.name]) || 0), 0),
     lifestyle: categories
       .filter(cat => cat.type === 'lifestyle')
-      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
+      .reduce((sum, cat) => sum + (Number(expenses[cat.name]) || 0), 0),
     investment: categories
       .filter(cat => cat.type === 'investment')
-      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
+      .reduce((sum, cat) => sum + (Number(expenses[cat.name]) || 0), 0),
     debt: categories
       .filter(cat => cat.type === 'debt')
-      .reduce((sum, cat) => sum + (parseFloat(expenses[cat.name]) || 0), 0),
+      .reduce((sum, cat) => sum + (Number(expenses[cat.name]) || 0), 0),
   };
 
   const totalExpenses = calculations.essential + calculations.lifestyle + calculations.investment + calculations.debt;
@@ -224,482 +226,178 @@ export default function BudgetCalculator() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-white pt-1">
-      {/* Animated gradient overlay */}
-      <motion.div 
-        className="fixed inset-0 opacity-30 pointer-events-none"
-        style={{
-          background: "linear-gradient(45deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1))",
-          backgroundSize: "400% 400%"
-        }}
-        animate={{
-          backgroundPosition: ["0% 0%", "100% 100%"],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "linear"
-        }}
-      />
-
-      {/* Floating particles */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className={`absolute rounded-full ${
-              i % 3 === 0 ? 'w-3 h-3 bg-indigo-400' : 
-              i % 3 === 1 ? 'w-2 h-2 bg-purple-400' : 
-              'w-1 h-1 bg-pink-400'
-            } opacity-30`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, (Math.random() > 0.5 ? -1 : 1) * (100 + Math.random() * 150), 0],
-              x: [0, (Math.random() - 0.5) * 50, 0],
-              scale: [0, 1, 0],
-            }}
-            transition={{
-              duration: 8 + Math.random() * 7,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Month Selector */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden"
+          className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-6 mb-8"
         >
-          {/* Animated decorative elements */}
-          <motion.div 
-            className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-b from-indigo-100 to-purple-100 rounded-full -mr-48 -mt-48 opacity-50"
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 180, 0],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-          />
-          <motion.div 
-            className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-t from-purple-100 to-pink-100 rounded-full -ml-48 -mb-48 opacity-50"
-            animate={{
-              scale: [1.2, 1, 1.2],
-              rotate: [180, 0, 180],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-          />
-
-          <div className="relative">
-            <motion.div 
-              className="flex items-center justify-between mb-6"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => handleMonthChange(-1)}
+              className="p-2 rounded-lg bg-black/20 text-white/80 hover:bg-black/30 transition-colors"
             >
-              <div className="flex items-center space-x-4">
-                <motion.div
-                  animate={{
-                    rotate: [0, 360],
-                  }}
-                  transition={{
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                >
-                  <SparklesIcon className="w-8 h-8 text-indigo-600" />
-                </motion.div>
-                <div>
-                  <motion.h2 
-                    className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    Smart Budget Calculator
-                  </motion.h2>
-                  <motion.p 
-                    className="text-gray-600 text-lg mt-2"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    Plan your financial future with AI-powered insights
-                  </motion.p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
-                  onClick={() => handleMonthChange(-1)}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </motion.button>
-
-                <span className="text-lg font-medium text-gray-700">{monthYear}</span>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2 rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
-                  onClick={() => handleMonthChange(1)}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </motion.button>
-              </div>
-            </motion.div>
-
-            <form onSubmit={handleSubmit}>
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="grid grid-cols-1 md:grid-cols-2 gap-8"
-              >
-                {categories.map((category) => (
-                  <motion.div
-                    key={category.name}
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.02 }}
-                    className="relative"
-                  >
-                    <div className="relative group">
-                      <motion.label 
-                        className="text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2"
-                        whileHover={{ x: 5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                      >
-                        <motion.div 
-                          className={`p-1.5 rounded-lg bg-gradient-to-r ${category.color}`}
-                          whileHover={{ scale: 1.1, rotate: 10 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
-                          {category.icon}
-                        </motion.div>
-                        <span>{category.name}</span>
-                      </motion.label>
-                      <div className={`relative transition-all duration-300 ${
-                        focusedInput === category.name ? 'scale-105' : 'scale-100'
-                      }`}>
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <span className="text-gray-500 text-lg">$</span>
-                        </div>
-                        <input
-                          type="number"
-                          className="block w-full pl-10 pr-12 py-3 text-lg border-2 border-gray-200 rounded-xl 
-                            focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all
-                            group-hover:border-indigo-300 group-hover:shadow-lg backdrop-blur-sm
-                            bg-white/70"
-                          placeholder={category.placeholder}
-                          value={expenses[category.name] || ''}
-                          onFocus={() => setFocusedInput(category.name)}
-                          onBlur={() => setFocusedInput(null)}
-                          onChange={(e) => {
-                            const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                            setExpenses(prev => ({ ...prev, [category.name]: value }));
-                          }}
-                        />
-                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
-                          /mo
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full mt-8 py-4 px-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 
-                  text-white text-lg font-semibold rounded-xl hover:opacity-90 transition-all 
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
-                  shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed
-                  relative overflow-hidden group"
-                disabled={isLoading || !expenses['Monthly Income']}
-              >
-                <motion.span 
-                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                  animate={{ x: [-500, 500] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                />
-                <span className="relative">
-                  {isLoading ? 'Saving...' : expenses['Monthly Income'] ? 'Analyze Budget' : 'Enter Monthly Income'}
-                </span>
-              </motion.button>
-            </form>
-
-            {showAnalysis && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-12 space-y-12"
-              >
-                <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-3 gap-8"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <motion.div
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-2xl shadow-lg relative overflow-hidden group"
-                  >
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-transparent"
-                      initial={{ x: '-100%' }}
-                      animate={{ x: '100%' }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    />
-                    <h3 className="text-emerald-800 font-semibold mb-2 relative">Monthly Savings</h3>
-                    <p className="text-3xl font-bold text-emerald-600 relative group-hover:scale-110 transition-transform">
-                      ${monthlySavings.toFixed(2)}
-                    </p>
-                    <p className="text-emerald-700 mt-1 relative">
-                      {((monthlySavings / calculations.income) * 100).toFixed(1)}% of income
-                    </p>
-                  </motion.div>
-                  
-                  <motion.div
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl shadow-lg relative overflow-hidden group"
-                  >
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-transparent"
-                      initial={{ x: '-100%' }}
-                      animate={{ x: '100%' }}
-                      transition={{
-                        duration: 3,
-                        delay: 1,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    />
-                    <h3 className="text-blue-800 font-semibold mb-2 relative">Yearly Savings Potential</h3>
-                    <p className="text-3xl font-bold text-blue-600 relative group-hover:scale-110 transition-transform">
-                      ${yearlySavings.toFixed(2)}
-                    </p>
-                    <p className="text-blue-700 mt-1 relative">If maintained for 12 months</p>
-                  </motion.div>
-
-                  <motion.div
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl shadow-lg relative overflow-hidden group"
-                  >
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-transparent"
-                      initial={{ x: '-100%' }}
-                      animate={{ x: '100%' }}
-                      transition={{
-                        duration: 3,
-                        delay: 2,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    />
-                    <h3 className="text-purple-800 font-semibold mb-2 relative">Total Expenses</h3>
-                    <p className="text-3xl font-bold text-purple-600 relative group-hover:scale-110 transition-transform">
-                      ${totalExpenses.toFixed(2)}
-                    </p>
-                    <p className="text-purple-700 mt-1 relative">
-                      {((totalExpenses / calculations.income) * 100).toFixed(1)}% of income
-                    </p>
-                  </motion.div>
-                </motion.div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                    whileHover={{ scale: 1.08 }}
-                    className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200 shadow-lg"
-                  >
-                    <h3 className="text-gray-800 font-semibold mb-4">Expense Breakdown</h3>
-                    <motion.div 
-                      className="h-[300px]"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.6 }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={pieChartData.filter(d => d.value > 0)}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            label={({ name, value }) => `${name}: $${value.toFixed(0)}`}
-                          >
-                            {pieChartData.map((entry, index) => (
-                              <Cell key={entry.name} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </motion.div>
-                  </motion.div>
-
-                  <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                    whileHover={{ scale: 1.08 }}
-                    className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200 shadow-lg"
-                  >
-                    <h3 className="text-gray-800 font-semibold mb-4">Income vs Expenses</h3>
-                    <motion.div 
-                      className="h-[300px]"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.6 }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={barChartData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                          <Bar dataKey="amount">
-                            {barChartData.map((entry, index) => (
-                              <Cell key={entry.name} fill={entry.color} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </motion.div>
-                  </motion.div>
-                </div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-8 rounded-2xl border border-indigo-100 shadow-lg"
-                >
-                  <motion.h3 
-                    className="text-lg font-semibold text-indigo-800 flex items-center mb-4"
-                    initial={{ x: -20 }}
-                    animate={{ x: 0 }}
-                    transition={{ delay: 1 }}
-                  >
-                    <motion.div
-                      animate={{
-                        rotate: [0, 360],
-                      }}
-                      transition={{
-                        duration: 20,
-                        repeat: Infinity,
-                        ease: "linear"
-                      }}
-                    >
-                      <SparklesIcon className="w-5 h-5 mr-2" />
-                    </motion.div>
-                    AI Financial Insights
-                  </motion.h3>
-                  <motion.ul 
-                    className="space-y-3"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    {getInsights().map((insight, index) => (
-                      <motion.li 
-                        key={index}
-                        variants={itemVariants}
-                        className="flex items-start space-x-2 text-indigo-700"
-                      >
-                        <span className="w-2 h-2 bg-indigo-400 rounded-full mt-2 flex-shrink-0" />
-                        <span>{insight}</span>
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate('/dashboard')}
-                    className="w-full mt-6 py-3 px-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 
-                      text-white font-semibold rounded-xl hover:opacity-90 transition-all relative overflow-hidden group"
-                  >
-                    <motion.span 
-                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                      animate={{
-                        x: [-500, 500],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    />
-                    <span className="relative">View Detailed Dashboard</span>
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            )}
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100"
+              <ChevronLeftIcon className="w-5 h-5" />
+            </button>
+            <h2 className="text-2xl font-semibold text-white">{monthYear}</h2>
+            <button
+              onClick={() => handleMonthChange(1)}
+              className="p-2 rounded-lg bg-black/20 text-white/80 hover:bg-black/30 transition-colors"
             >
-              <h3 className="text-lg font-semibold text-indigo-800 flex items-center">
-                <SparklesIcon className="w-5 h-5 mr-2" />
-                Pro Tips
-              </h3>
-              <ul className="mt-3 text-sm text-indigo-700 space-y-2">
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-indigo-400 rounded-full mr-2" />
-                  Include all regular monthly expenses for accurate recommendations
-                </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-indigo-400 rounded-full mr-2" />
-                  Consider average amounts for variable expenses
-                </li>
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-indigo-400 rounded-full mr-2" />
-                  Don't forget about subscriptions and recurring bills
-                </li>
-              </ul>
-            </motion.div>
+              <ChevronRightIcon className="w-5 h-5" />
+            </button>
           </div>
         </motion.div>
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {categories.map((category) => (
+              <motion.div
+                key={category.name}
+                variants={itemVariants}
+                className={`backdrop-blur-xl bg-black/30 rounded-xl shadow-lg border border-white/10 overflow-hidden ${
+                  focusedInput === category.name ? 'ring-2 ring-emerald-500' : ''
+                }`}
+              >
+                <div className={`bg-gradient-to-r ${category.color} p-4`}>
+                  <div className="flex items-center space-x-3">
+                    {category.icon}
+                    <span className="text-white font-medium">{category.name}</span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/60">$</span>
+                    <input
+                      type="number"
+                      name={category.name}
+                      value={expenses[category.name] || ''}
+                      onChange={(e) => setExpenses({ ...expenses, [category.name]: e.target.value })}
+                      placeholder={category.placeholder}
+                      onFocus={() => setFocusedInput(category.name)}
+                      onBlur={() => setFocusedInput(null)}
+                      className="w-full pl-8 pr-4 py-2 bg-black/20 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Submit Button */}
+          <div className="flex justify-center">
+            <motion.button
+              type="submit"
+              disabled={isLoading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin" />
+                  <span>Saving...</span>
+                </div>
+              ) : (
+                'Save Budget'
+              )}
+            </motion.button>
+          </div>
+        </form>
+
+        {/* Analysis Section */}
+        {showAnalysis && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-12 space-y-8"
+          >
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Pie Chart */}
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-6"
+              >
+                <h3 className="text-xl font-semibold text-white mb-6">Expense Breakdown</h3>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieChartData.filter(d => d.value > 0)}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        label={({ name, value }) => `${name}: $${value.toFixed(0)}`}
+                      >
+                        {pieChartData.map((entry, index) => (
+                          <Cell key={entry.name} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+
+              {/* Bar Chart */}
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-6"
+              >
+                <h3 className="text-xl font-semibold text-white mb-6">Income vs Expenses</h3>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                      <Bar dataKey="amount">
+                        {barChartData.map((entry, index) => (
+                          <Cell key={entry.name} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <motion.div className="backdrop-blur-xl bg-black/30 rounded-xl p-6 border border-white/10">
+                <h4 className="text-white/60 text-sm font-medium">Monthly Income</h4>
+                <p className="mt-2 text-2xl font-bold text-emerald-400">${calculations.income.toFixed(2)}</p>
+              </motion.div>
+
+              <motion.div className="backdrop-blur-xl bg-black/30 rounded-xl p-6 border border-white/10">
+                <h4 className="text-white/60 text-sm font-medium">Total Expenses</h4>
+                <p className="mt-2 text-2xl font-bold text-rose-400">${totalExpenses.toFixed(2)}</p>
+              </motion.div>
+
+              <motion.div className="backdrop-blur-xl bg-black/30 rounded-xl p-6 border border-white/10">
+                <h4 className="text-white/60 text-sm font-medium">Monthly Savings</h4>
+                <p className="mt-2 text-2xl font-bold text-emerald-400">${monthlySavings.toFixed(2)}</p>
+              </motion.div>
+
+              <motion.div className="backdrop-blur-xl bg-black/30 rounded-xl p-6 border border-white/10">
+                <h4 className="text-white/60 text-sm font-medium">Yearly Savings</h4>
+                <p className="mt-2 text-2xl font-bold text-emerald-400">${yearlySavings.toFixed(2)}</p>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
