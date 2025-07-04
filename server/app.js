@@ -13,37 +13,68 @@ connectDB();
 
 const app = express();
 
+// Trust proxy - required for secure cookies in production
+app.set('trust proxy', 1);
+
 // Debug middleware to log requests
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   console.log('Origin:', req.headers.origin);
+  console.log('Cookies:', req.cookies);
+  console.log('Headers:', req.headers);
   next();
 });
 
 app.use(express.json());
 
+// Cookie parser with secure options
 app.use(cookieParser());
+
+// Global middleware to set cookie options based on environment
+app.use((req, res, next) => {
+  res.cookie = res.cookie.bind(res);
+  const originalCookie = res.cookie;
+  res.cookie = function (name, value, options = {}) {
+    const isSecure = process.env.NODE_ENV === 'production';
+    const defaultOptions = {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
+      path: '/',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    };
+    return originalCookie.call(this, name, value, { ...defaultOptions, ...options });
+  };
+  next();
+});
 
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://fin-sage-rho.vercel.app',
+  'https://fin-sage-rho.vercel.app'
 ];
 
+// CORS configuration with proper cookie handling
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    // For development/testing - allow requests with no origin
+    if (!origin) {
+      return callback(null, true);
     }
-    return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('Origin not allowed:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Set-Cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 
