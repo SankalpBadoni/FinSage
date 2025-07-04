@@ -76,7 +76,7 @@ export default function Investments() {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:4000/api/investments/recommendations', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/investments/recommendations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ savings: parseFloat(savingsAmount) })
