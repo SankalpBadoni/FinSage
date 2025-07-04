@@ -36,24 +36,25 @@ const generateToken = (id) => {
 // Set token in cookie
 const sendTokenResponse = (user, statusCode, res) => {
   const token = generateToken(user._id);
-
+  
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   const options = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/',
   };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
 
   res
     .status(statusCode)
     .cookie('token', token, options)
     .json({
       success: true,
-      token,
+      data: user,
     });
 };
 

@@ -67,9 +67,14 @@ const getMe = async (req, res) => {
 };
 
 const logout = async (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/',
   });
 
   res.status(200).json({

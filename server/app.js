@@ -26,8 +26,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
-// Cookie parser with secure options
 app.use(cookieParser());
 
 // Global middleware to set cookie options based on environment
@@ -48,10 +46,10 @@ app.use((req, res, next) => {
   next();
 });
 
-
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://fin-sage-rho.vercel.app'
+  'https://fin-sage-rho.vercel.app',
+  'https://finsage-d52w.onrender.com'
 ];
 
 // CORS configuration with proper cookie handling
@@ -76,7 +74,6 @@ app.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
-
 
 app.use('/api/auth', authRoutes);
 app.use('/api/budgets', budgetRoutes);
