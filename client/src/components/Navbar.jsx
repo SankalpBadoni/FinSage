@@ -26,7 +26,7 @@ export default function Navbar() {
                 </svg>
               </div>
               <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                FinSmart
+                FinSage
               </span>
             </Link>
 
