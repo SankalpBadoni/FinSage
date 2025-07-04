@@ -46,28 +46,28 @@ export default function Dashboard() {
   }, [currentMonth, totalExpenses]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 gap-8">
           {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-indigo-100"
+            className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg border border-white/10 p-8"
           >
             <div className="flex items-center space-x-4">
               <motion.div
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 p-3 rounded-xl"
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-3 rounded-xl"
               >
                 <ArrowTrendingUpIcon className="w-8 h-8 text-white" />
               </motion.div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold text-white">
                   Financial Dashboard
                 </h1>
-                <p className="mt-2 text-gray-600 text-lg">Track your spending, save more, and invest wisely</p>
+                <p className="mt-2 text-white/80 text-lg">Track your spending, save more, and invest wisely</p>
               </div>
             </div>
           </motion.div>
@@ -81,7 +81,7 @@ export default function Dashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all"
+                className="backdrop-blur-xl bg-black/30 rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-white/10"
                 onClick={() => setSelectedCategory(category.name)}
               >
                 <div className="flex flex-col h-full">
@@ -90,8 +90,8 @@ export default function Dashboard() {
                       {category.icon}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500">{category.name}</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-white/60">{category.name}</p>
+                      <p className="text-2xl font-bold text-white">
                         ${(currentMonth[category.dataKey] || 0).toFixed(2)}
                       </p>
                     </div>
@@ -101,14 +101,14 @@ export default function Dashboard() {
                     <div className="mt-auto">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-white/60">
                             of income
                           </span>
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-white">
                             {((currentMonth[category.dataKey] || 0) / currentMonth['Monthly Income'] * 100).toFixed(1)}%
                           </span>
                         </div>
-                        <div className="overflow-hidden h-1.5 text-xs flex rounded-full bg-gray-200">
+                        <div className="overflow-hidden h-1.5 text-xs flex rounded-full bg-gray-700">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ 
@@ -124,8 +124,8 @@ export default function Dashboard() {
                   
                   {category.name === 'Monthly Income' && (
                     <div className="mt-4 flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Savings Potential</span>
-                      <span className="text-lg font-semibold text-emerald-600">
+                      <span className="text-sm text-white/60">Savings Potential</span>
+                      <span className="text-lg font-semibold text-emerald-400">
                         ${savings.toFixed(2)}
                       </span>
                     </div>
@@ -143,52 +143,53 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.01 }}
               transition={{ duration: 0.3 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-indigo-100 hover:border-indigo-300 transition-all"
+              className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg p-6 border border-white/10 hover:border-white/20 transition-all"
             >
-              <h2 className="text-xl font-semibold mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Monthly Spending Trends</h2>
+              <h2 className="text-xl font-semibold mb-6 text-white">Monthly Spending Trends</h2>
               <div className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
                     <defs>
                       {categories.filter(cat => cat.name !== 'Monthly Income').map((cat, index) => (
                         <linearGradient key={cat.dataKey} id={`color${cat.dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={cat.color.replace('bg-', '#').replace('500', '400')} stopOpacity={0.9}/>
-                          <stop offset="95%" stopColor={cat.color.replace('bg-', '#').replace('500', '100')} stopOpacity={0.2}/>
-                          <animate attributeName="stopOpacity" values="0.2;0.3;0.2" dur="3s" repeatCount="indefinite" />
+                          <stop offset="5%" stopColor={cat.color.replace('bg-', '#').replace('500', '300')} stopOpacity={0.6}/>
+                          <stop offset="95%" stopColor={cat.color.replace('bg-', '#').replace('500', '300')} stopOpacity={0.1}/>
+                          <animate attributeName="stopOpacity" values="0.1;0.2;0.1" dur="3s" repeatCount="indefinite" />
                         </linearGradient>
                       ))}
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fill: '#4B5563', fontSize: 12 }}
-                      axisLine={{ stroke: '#9CA3AF' }}
-                      tickLine={{ stroke: '#9CA3AF' }}
+                    <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" opacity={0.4} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: '#D1D5DB', fontSize: 12 }}
+                      axisLine={{ stroke: '#6B7280' }}
+                      tickLine={{ stroke: '#6B7280' }}
                     />
-                    <YAxis 
-                      tick={{ fill: '#4B5563', fontSize: 12 }}
-                      axisLine={{ stroke: '#9CA3AF' }}
-                      tickLine={{ stroke: '#9CA3AF' }}
+                    <YAxis
+                      tick={{ fill: '#D1D5DB', fontSize: 12 }}
+                      axisLine={{ stroke: '#6B7280' }}
+                      tickLine={{ stroke: '#6B7280' }}
                       tickFormatter={(value) => `$${value}`}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value) => `$${value.toFixed(2)}`}
-                      labelStyle={{ color: '#111827', fontWeight: 'bold' }}
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                        border: '1px solid #e5e7eb',
+                      labelStyle={{ color: '#F3F4F6', fontWeight: 'bold' }}
+                      contentStyle={{
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        border: '1px solid rgba(75, 85, 99, 0.5)',
                         borderRadius: '0.75rem',
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                        padding: '12px'
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
+                        padding: '12px',
+                        color: '#F3F4F6'
                       }}
-                      cursor={{ strokeDasharray: '3 3' }}
+                      cursor={{ stroke: '#9CA3AF', strokeWidth: 1, strokeDasharray: '3 3' }}
                     />
                     <Legend
                       wrapperStyle={{
                         paddingTop: '20px'
                       }}
                       formatter={(value) => (
-                        <span style={{ color: '#4B5563', fontWeight: 500 }}>{value}</span>
+                        <span style={{ color: '#F3F4F6', fontWeight: 500 }}>{value}</span>
                       )}
                     />
                     {categories.filter(cat => cat.name !== 'Monthly Income').map((cat) => (
@@ -197,10 +198,10 @@ export default function Dashboard() {
                         type="monotone"
                         dataKey={cat.dataKey}
                         name={cat.name}
-                        stroke={cat.color.replace('bg-', '#').replace('500', '600')}
+                        stroke={cat.color.replace('bg-', '#').replace('500', '300')}
+                        strokeWidth={2.5}
                         fill={`url(#color${cat.dataKey})`}
                         fillOpacity={1}
-                        strokeWidth={2}
                       />
                     ))}
                   </AreaChart>
@@ -214,65 +215,66 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.01 }}
               transition={{ duration: 0.3 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-indigo-100 hover:border-indigo-300 transition-all"
+              className="backdrop-blur-xl bg-black/30 rounded-2xl shadow-lg p-6 border border-white/10 hover:border-white/20 transition-all"
             >
-              <h2 className="text-xl font-semibold mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Income vs Expenses</h2>
+              <h2 className="text-xl font-semibold mb-6 text-white">Income vs Expenses</h2>
               <div className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
                     <defs>
                       <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.9}/>
-                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.2}/>
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.3}/>
                       </linearGradient>
                       <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.9}/>
-                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0.2}/>
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0.3}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
                     <XAxis 
                       dataKey="month" 
-                      tick={{ fill: '#4B5563', fontSize: 12 }}
-                      axisLine={{ stroke: '#9CA3AF' }}
-                      tickLine={{ stroke: '#9CA3AF' }}
+                      tick={{ fill: '#E5E7EB', fontSize: 12 }}
+                      axisLine={{ stroke: '#4B5563' }}
+                      tickLine={{ stroke: '#4B5563' }}
                     />
                     <YAxis 
-                      tick={{ fill: '#4B5563', fontSize: 12 }}
-                      axisLine={{ stroke: '#9CA3AF' }}
-                      tickLine={{ stroke: '#9CA3AF' }}
+                      tick={{ fill: '#E5E7EB', fontSize: 12 }}
+                      axisLine={{ stroke: '#4B5563' }}
+                      tickLine={{ stroke: '#4B5563' }}
                       tickFormatter={(value) => `$${value}`}
                     />
                     <Tooltip 
                       formatter={(value) => `$${value.toFixed(2)}`}
-                      labelStyle={{ color: '#111827', fontWeight: 'bold' }}
+                      labelStyle={{ color: '#E5E7EB', fontWeight: 'bold' }}
                       contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                        border: '1px solid #e5e7eb',
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
                         borderRadius: '0.75rem',
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                        padding: '12px'
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
+                        padding: '12px',
+                        color: '#E5E7EB'
                       }}
-                      cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                      cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                     />
                     <Legend
                       wrapperStyle={{
                         paddingTop: '20px'
                       }}
                       formatter={(value) => (
-                        <span style={{ color: '#4B5563', fontWeight: 500 }}>{value}</span>
+                        <span style={{ color: '#E5E7EB', fontWeight: 500 }}>{value}</span>
                       )}
                     />
                     <Bar 
                       dataKey="Monthly Income" 
                       name="Income" 
-                      fill="#10B981"
+                      fill="url(#colorIncome)"
                       radius={[4, 4, 0, 0]}
                     />
                     <Bar 
                       dataKey="totalExpenses" 
                       name="Total Expenses" 
-                      fill="#EF4444"
+                      fill="url(#colorExpenses)"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
