@@ -13,19 +13,37 @@ connectDB();
 
 const app = express();
 
+// Debug middleware to log requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Origin:', req.headers.origin);
+  next();
+});
+
 app.use(express.json());
 
 app.use(cookieParser());
 
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://fin-sage-rho.vercel.app',
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://fin-sage-rho.vercel.app/',
-  ],
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['set-cookie'],
+  exposedHeaders: ['Set-Cookie'],
 }));
 
 
