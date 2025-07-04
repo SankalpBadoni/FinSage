@@ -15,14 +15,25 @@ export function AuthProvider({ children }) {
   // Check if user is logged in
   const checkUser = async () => {
     try {
+      console.log('Checking user auth status...');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-        credentials: 'include'
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
       });
+      console.log('Auth check response:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Auth check data:', data);
         if (data.success && data.data) {
           setUser(data.data);
         }
+      } else {
+        const errorData = await response.json();
+        console.log('Auth check error:', errorData);
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
@@ -37,6 +48,7 @@ export function AuthProvider({ children }) {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         credentials: 'include',
@@ -44,6 +56,7 @@ export function AuthProvider({ children }) {
       });
 
       const data = await response.json();
+      console.log('Register response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
@@ -60,9 +73,11 @@ export function AuthProvider({ children }) {
   // Login user
   const login = async (formData) => {
     try {
+      console.log('Attempting login...');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         credentials: 'include',
@@ -70,6 +85,7 @@ export function AuthProvider({ children }) {
       });
 
       const data = await response.json();
+      
 
       if (response.ok && data.success) {
         // Wait for user data to be fetched
@@ -80,14 +96,21 @@ export function AuthProvider({ children }) {
         return { success: false, error: data.message || 'Login failed' };
       }
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, error: 'An error occurred during login' };
     }
   };
+
   // Logout user
   const logout = async () => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
-        credentials: 'include'
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
       });
       setUser(null);
       navigate('/login');
