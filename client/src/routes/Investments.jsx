@@ -116,8 +116,6 @@ export default function Investments() {
 
     try {
       const apiUrl = `${import.meta.env.VITE_API_URL}/api/investments/chat`;
-      console.log('Making chat request to:', apiUrl);
-      console.log('Environment variable VITE_API_URL:', import.meta.env.VITE_API_URL);
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -128,8 +126,6 @@ export default function Investments() {
         credentials: 'include',
         body: JSON.stringify({ message: userMessage })
       });
-
-      console.log('Chat response status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -138,7 +134,6 @@ export default function Investments() {
       }
       
       const data = await response.json();
-      console.log('Chat response data:', data);
       setChatMessages(prev => [...prev, { sender: 'bot', text: data.reply }]);
     } catch (err) {
       console.error('Chat error:', err);
