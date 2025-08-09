@@ -280,7 +280,7 @@ export default function ProfessionalFinanceHome() {
   return (
     <div className="min-h-screen bg-slate-50 w-full">
       {/* SOPHISTICATED HERO SECTION */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden w-full">
+      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-12 2xl:px-16">
         <SophisticatedBackground />
         
         <div className="relative z-10 w-full px-4 sm:px-6 lg:px-12 2xl:px-16">
