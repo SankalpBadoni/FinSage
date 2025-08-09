@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { CurrencyDollarIcon, ArrowTrendingUpIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, ArrowTrendingUpIcon, ShieldCheckIcon, ChatBubbleOvalLeftEllipsisIcon, XMarkIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 const RiskCard = ({ name, description, expectedReturn, riskLevel, minAmount = 0, considerations = [] }) => (
   <motion.div
@@ -67,6 +67,14 @@ export default function Investments() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savingsAmount, setSavingsAmount] = useState('');
+  
+  // Chatbot states
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: 'bot', text: 'Hi! I\'m your financial advisor bot. Ask me anything about investments, budgeting, or financial planning!' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,7 +86,11 @@ export default function Investments() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/investments/recommendations`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({ savings: parseFloat(savingsAmount) })
       });
 
@@ -90,6 +102,49 @@ export default function Investments() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Chat handler function
+  const handleChatSend = async () => {
+    if (!chatInput.trim()) return;
+    
+    const userMessage = chatInput.trim();
+    setChatMessages(prev => [...prev, { sender: 'user', text: userMessage }]);
+    setChatInput('');
+    setChatLoading(true);
+
+    try {
+      const apiUrl = `${import.meta.env.VITE_API_URL}/api/investments/chat`;
+      console.log('Making chat request to:', apiUrl);
+      console.log('Environment variable VITE_API_URL:', import.meta.env.VITE_API_URL);
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ message: userMessage })
+      });
+
+      console.log('Chat response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Chat response error:', errorText);
+        throw new Error(`Failed to get chat response: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Chat response data:', data);
+      setChatMessages(prev => [...prev, { sender: 'bot', text: data.reply }]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setChatMessages(prev => [...prev, { sender: 'bot', text: 'Sorry, I couldn\'t process your request right now. Please try again later.' }]);
+    } finally {
+      setChatLoading(false);
     }
   };
 
@@ -235,6 +290,97 @@ export default function Investments() {
             </motion.div>
           </>
         )}
+        
+        {/* Chatbot */}
+        <div className="fixed bottom-6 right-6 z-50">
+          {chatOpen ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              className="w-80 h-96 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+            >
+              {/* Chat Header */}
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-white font-semibold">FinBot</span>
+                </div>
+                <button 
+                  onClick={() => setChatOpen(false)}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-900/50">
+                {chatMessages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        message.sender === 'user'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white/10 text-white border border-white/20'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                    </div>
+                  </div>
+                ))}
+                
+                {chatLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white/10 text-white border border-white/20 p-3 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                        <span className="text-sm text-white/70">FinBot is typing...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-4 border-t border-white/20 bg-gray-900/70">
+                <div className="flex items-center space-x-2">
+                  <input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleChatSend()}
+                    placeholder="Ask me about investments..."
+                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:border-emerald-500/50 text-sm"
+                    disabled={chatLoading}
+                  />
+                  <button
+                    onClick={handleChatSend}
+                    disabled={chatLoading || !chatInput.trim()}
+                    className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed p-2 rounded-lg transition-colors"
+                  >
+                    <PaperAirplaneIcon className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setChatOpen(true)}
+              className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 p-4 rounded-full shadow-2xl text-white transition-all duration-300"
+            >
+              <ChatBubbleOvalLeftEllipsisIcon className="w-6 h-6" />
+            </motion.button>
+          )}
+        </div>
       </div>
     </div>
   );

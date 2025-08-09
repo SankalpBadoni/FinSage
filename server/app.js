@@ -17,13 +17,13 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Debug middleware to log requests
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  console.log('Origin:', req.headers.origin);
-  console.log('Cookies:', req.cookies);
-  console.log('Headers:', req.headers);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+//   console.log('Origin:', req.headers.origin);
+//   console.log('Cookies:', req.cookies);
+//   console.log('Headers:', req.headers);
+//   next();
+// });
 
 app.use(express.json());
 app.use(cookieParser());
