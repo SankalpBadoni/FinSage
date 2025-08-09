@@ -2,13 +2,13 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { CurrencyDollarIcon, ArrowTrendingUpIcon, ShieldCheckIcon, ChatBubbleOvalLeftEllipsisIcon, XMarkIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
-const RiskCard = ({ name, description, expectedReturn, riskLevel, minAmount = 0, considerations = [] }) => (
+const RiskCard = ({ name, description, expectedReturn, riskLevel, minAmount = 0, considerations = [], onLearnMore }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="backdrop-blur-xl bg-black/30 rounded-xl overflow-hidden border border-white/10"
+    className="backdrop-blur-xl bg-black/30 rounded-xl overflow-hidden border border-white/10 h-full"
   >
-    <div className="p-6">
+    <div className="p-6 flex flex-col h-full">
       <div className="flex items-center space-x-4">
         <div className={`${
           riskLevel === 'Low' ? 'bg-emerald-500' : 
@@ -24,38 +24,45 @@ const RiskCard = ({ name, description, expectedReturn, riskLevel, minAmount = 0,
           <p className="text-sm text-white/70">Expected Return: {expectedReturn}</p>
         </div>
       </div>
-      <p className="mt-4 text-white/80">{description}</p>
-      {typeof minAmount === 'number' && (
+      
+      <div className="flex-grow">
+        <p className="mt-4 text-white/80">{description}</p>
+        {typeof minAmount === 'number' && (
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-sm font-medium text-white/60">Min. Investment:</span>
+            <span className="text-sm font-medium text-white">${minAmount.toLocaleString()}</span>
+          </div>
+        )}
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-white/60">Min. Investment:</span>
-          <span className="text-sm font-medium text-white">${minAmount.toLocaleString()}</span>
+          <span className="text-sm font-medium text-white/60">Risk Level:</span>
+          <span className={`
+            px-3 py-1 rounded-full text-sm font-medium
+            ${riskLevel === 'Low' ? 'bg-emerald-500/20 text-emerald-300' : 
+              riskLevel === 'Moderate' ? 'bg-amber-500/20 text-amber-300' : 
+              'bg-rose-500/20 text-rose-300'}
+          `}>
+            {riskLevel}
+          </span>
         </div>
-      )}
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-sm font-medium text-white/60">Risk Level:</span>
-        <span className={`
-          px-3 py-1 rounded-full text-sm font-medium
-          ${riskLevel === 'Low' ? 'bg-emerald-500/20 text-emerald-300' : 
-            riskLevel === 'Moderate' ? 'bg-amber-500/20 text-amber-300' : 
-            'bg-rose-500/20 text-rose-300'}
-        `}>
-          {riskLevel}
-        </span>
+        {considerations && considerations.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-white/60 mb-2">Key Considerations:</h4>
+            <ul className="space-y-2">
+              {considerations.map((item, index) => (
+                <li key={index} className="text-sm text-white/80 flex items-center">
+                  <span className="mr-2">•</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
-      {considerations && considerations.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-white/60 mb-2">Key Considerations:</h4>
-          <ul className="space-y-2">
-            {considerations.map((item, index) => (
-              <li key={index} className="text-sm text-white/80 flex items-center">
-                <span className="mr-2">•</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <button className="mt-6 w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2 px-4 rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-500/20">
+      
+      <button 
+        onClick={() => onLearnMore && onLearnMore(name)}
+        className="mt-6 w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2 px-4 rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-500/20"
+      >
         Learn More
       </button>
     </div>
@@ -67,6 +74,10 @@ export default function Investments() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savingsAmount, setSavingsAmount] = useState('');
+  
+  // Modal for Learn More
+  const [modal, setModal] = useState(null); // { name, details }
+  const [modalLoading, setModalLoading] = useState(false);
   
   // Chatbot states
   const [chatOpen, setChatOpen] = useState(false);
@@ -143,6 +154,36 @@ export default function Investments() {
     }
   };
 
+  // Learn More handler function
+  const handleLearnMore = async (investmentName) => {
+    setModal({ name: investmentName, details: 'Loading...' });
+    setModalLoading(true);
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/investments/chat`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          message: `Provide a comprehensive, detailed explanation about "${investmentName}" as an investment option. Include: what it is, how it works, expected returns, risks involved, liquidity, tax implications, who should consider it, minimum investment requirements, and practical tips for getting started. Make it informative and educational for someone with $${savingsAmount || '10000'} in savings.`
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to load investment details');
+      
+      const data = await response.json();
+      setModal({ name: investmentName, details: data.reply });
+    } catch (err) {
+      console.error('Learn more error:', err);
+      setModal({ name: investmentName, details: 'Unable to load detailed information at this time. Please try again later.' });
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -211,15 +252,17 @@ export default function Investments() {
               {recommendations.lowRisk.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold text-white/90 mb-4">Conservative Investments</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">                  {recommendations.lowRisk.map((option, index) => (
-                    <RiskCard 
-                      key={index} 
-                      {...option} 
-                      name={option.name || option.title}
-                      riskLevel="Low" 
-                    />
-                  ))}
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {recommendations.lowRisk.map((option, index) => (
+                      <RiskCard 
+                        key={index} 
+                        {...option} 
+                        name={option.name || option.title}
+                        riskLevel="Low" 
+                        onLearnMore={handleLearnMore}
+                      />
+                    ))}
+                  </div>
               </div>
             )}
 
@@ -233,6 +276,7 @@ export default function Investments() {
                         {...option} 
                         name={option.name || option.title}
                         riskLevel="Moderate" 
+                        onLearnMore={handleLearnMore}
                       />
                     ))}
                   </div>
@@ -249,6 +293,7 @@ export default function Investments() {
                         {...option} 
                         name={option.name || option.title}
                         riskLevel="High" 
+                        onLearnMore={handleLearnMore}
                       />
                     ))}
                   </div>
@@ -284,6 +329,65 @@ export default function Investments() {
               </ul>
             </motion.div>
           </>
+        )}
+        
+        {/* Learn More Modal */}
+        {modal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden shadow-2xl"
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{modal.name}</h3>
+                  <p className="text-emerald-100 text-sm">Detailed Investment Guide</p>
+                </div>
+                <button 
+                  onClick={() => setModal(null)}
+                  className="text-white hover:text-gray-200 transition-colors p-2"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                {modalLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="flex items-center space-x-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+                      <span className="text-white">Loading detailed information...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="prose prose-invert max-w-none">
+                    <div className="text-white/90 text-base leading-relaxed whitespace-pre-wrap">
+                      {modal.details}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="bg-gray-800/50 px-6 py-4 border-t border-white/10">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-white/70">
+                    This information is for educational purposes only. Please consult a financial advisor for personalized advice.
+                  </p>
+                  <button 
+                    onClick={() => setModal(null)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
         
         {/* Chatbot */}
